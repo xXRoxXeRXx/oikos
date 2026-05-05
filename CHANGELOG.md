@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.47.3] - 2026-05-06
+
+### Changed
+- **Documentation**: SPEC.md updated to reflect v0.45–v0.47 changes — CardDAV Accounts and CardDAV Addressbook Selection tables added; Contacts table expanded with multi-value fields and CardDAV columns; new contact_phones, contact_emails, contact_addresses sub-tables documented; Birthdays table reflects configurable reminder offset columns; External Calendars table notes apple→caldav migration; Tasks module documents bulk actions; Contacts module documents CardDAV multi-account sync; Birthdays module reflects flexible reminder offsets; Settings module updated for Synchronization tab, module toggles, scheduled backups, and CardDAV UI.
+- **README**: Birthdays feature description updated to reflect customizable reminder offsets; Backup feature description updated to mention automatic scheduled backups.
+
+### Removed
+- **Repository**: archived implemented cleanup plan (`docs/designs/2026-05-04-repo-cleanup-design.md` → `docs/archive/designs/`); removed settings sidebar prototype HTML (`docs/designs/2026-05-04-settings-sidebar-demo.html`).
+
 ## [0.47.2] - 2026-05-05
 
 ### Changed
