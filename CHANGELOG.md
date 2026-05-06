@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.47.5] - 2026-05-06
+
+### Changed
+- **Settings — Sync tab**: open standards (CalDAV, CardDAV, ICS subscriptions) are now grouped first under a dedicated "CalDAV & CardDAV" section; cloud services (Google Calendar, Apple Calendar) move to a secondary "Cloud Services" section. Fixes a raw `<h2>` heading inside the CalDAV card (now uses `settings-card__title` like all other cards).
+- **Navigation — shared sub-tabs component**: extracted `renderSubTabs()` (`public/utils/sub-tabs.js` + `public/styles/sub-tabs.css`) as the single implementation for all sub-module navigation. Settings tabs and kitchen tabs now share the same pill-style bar (icon + label, sticky, horizontally scrollable, group separators). Removes ~120 lines of duplicated CSS from `kitchen-tabs.css` and `settings.css`.
+- **Test loader**: `test-browser-loader.mjs` now resolves browser-absolute `/utils/*.js` imports to the `public/` directory automatically, eliminating the need for per-module stubs.
+
 ## [0.47.4] - 2026-05-06
 
 ### Fixed
