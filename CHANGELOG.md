@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.48.0] - 2026-05-06
+
+### Added
+- **Multi-person assignment**: tasks and calendar events can now be assigned to multiple family members simultaneously. A new `task_assignments` / `event_assignments` join table (migration v32) stores the assignments; existing single-user data is migrated automatically.
+- **Avatar stack**: task cards, Kanban cards, and the calendar agenda view display stacked avatars for all assigned users (up to 3 visible, then a `+N` overflow badge).
+- **Shared UserMultiSelect component** (`public/components/user-multi-select.js`): checkbox-based dropdown used in both the task modal and the calendar event modal; replaces the previous single-user `<select>`.
+- **`assigned_to` filter extended**: `GET /api/v1/tasks?assigned_to=<id>` and `GET /api/v1/calendar?assigned_to=<id>` now match any task/event where the user appears in the assignments list.
+
+### Changed
+- API response for tasks and calendar events now includes `assigned_users: [{id, display_name, color}]` array alongside the legacy `assigned_to` / `assigned_name` / `assigned_color` fields.
+- Recurring task completion copies all multi-person assignments to the new recurring instance.
+
 ## [0.47.5] - 2026-05-06
 
 ### Changed
