@@ -9,6 +9,7 @@ import { openModal, closeModal, confirmModal } from '/components/modal.js';
 import { t, formatDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid, getDateFormat } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { renderSettingsSidebar, renderBreadcrumb, getLastActivePage, setActivePage, findSectionAndPage } from '/utils/settings-nav.js';
+import { renderSubTabs } from '/utils/sub-tabs.js';
 import '/components/oikos-locale-picker.js';
 
 const SUPPORTED_CURRENCIES = ['AED', 'AUD', 'BRL', 'CAD', 'CHF', 'CNY', 'CZK', 'DKK', 'EUR', 'GBP', 'HUF', 'INR', 'JPY', 'NOK', 'PLN', 'RUB', 'SAR', 'SEK', 'TRY', 'UAH', 'USD'];
@@ -256,8 +257,6 @@ export async function render(container, { user }) {
     : (allowedTabs.includes(storedTab) ? storedTab : 'general');
 
   const panelHidden = (id) => id === activeTab ? '' : ' hidden';
-  const btnClass    = (id) => `settings-tab-btn${id === activeTab ? ' settings-tab-btn--active' : ''}`;
-  const btnAria     = (id) => id === activeTab ? 'true' : 'false';
 
   container.innerHTML = `
     <div class="page settings-page">
@@ -267,18 +266,6 @@ export async function render(container, { user }) {
 
       ${syncOk  ? `<div class="settings-banner settings-banner--success">${syncOk === 'google' ? t('settings.syncSuccessGoogle') : t('settings.syncSuccessApple')}</div>` : ''}
       ${syncErr ? `<div class="settings-banner settings-banner--error">${syncErr === 'google' ? t('settings.syncErrorGoogle') : t('settings.syncErrorApple')}</div>` : ''}
-
-      <nav class="settings-tabs" role="tablist" aria-label="${t('settings.tabsAriaLabel')}">
-        <button class="${btnClass('general')}"  role="tab" data-tab="general"  aria-selected="${btnAria('general')}">${t('settings.tabGeneral')}</button>
-        <button class="${btnClass('meals')}"    role="tab" data-tab="meals"    aria-selected="${btnAria('meals')}">${t('settings.tabMeals')}</button>
-        <button class="${btnClass('budget')}"   role="tab" data-tab="budget"   aria-selected="${btnAria('budget')}">${t('settings.tabBudget')}</button>
-        <button class="${btnClass('shopping')}" role="tab" data-tab="shopping" aria-selected="${btnAria('shopping')}">${t('settings.tabShopping')}</button>
-        <button class="${btnClass('sync')}" role="tab" data-tab="sync" aria-selected="${btnAria('sync')}" data-group="sync">${t('settings.tabSync')}</button>
-        <button class="${btnClass('account')}"  role="tab" data-tab="account"  aria-selected="${btnAria('account')}" data-group="personal">${t('settings.tabAccount')}</button>
-        ${user?.role === 'admin' ? `<button class="${btnClass('family')}" role="tab" data-tab="family" aria-selected="${btnAria('family')}" data-group="admin">${t('settings.tabFamily')}</button>` : ''}
-        ${user?.role === 'admin' ? `<button class="${btnClass('api-tokens')}" role="tab" data-tab="api-tokens" aria-selected="${btnAria('api-tokens')}" data-group="admin">${t('settings.tabApiTokens')}</button>` : ''}
-        ${user?.role === 'admin' ? `<button class="${btnClass('backup')}" role="tab" data-tab="backup" aria-selected="${btnAria('backup')}" data-group="admin">${t('settings.tabBackup')}</button>` : ''}
-      </nav>
 
       <!-- Panel: Allgemein (Design + Sprache) -->
       <div class="settings-tab-panel" data-panel="general" role="tabpanel"${panelHidden('general')}>
@@ -878,6 +865,7 @@ docker cp oikos:/data/oikos-backup.db ./oikos-backup.db</code></pre>
     loadCardDAVAccounts(container, user);
   }
 
+  renderSettingsSubTabs(container, user, activeTab);
   bindEvents(container, user, users, categories, icsSubscriptions, apiTokens);
   if (window.lucide) window.lucide.createIcons();
 }
@@ -1152,11 +1140,55 @@ async function loadCardDAVAccounts(container, user) {
 }
 
 // --------------------------------------------------------
+// Sub-Tab-Navigation
+// --------------------------------------------------------
+
+function buildSettingsTabs(user) {
+  const tabs = [
+    { id: 'general',    label: t('settings.tabGeneral'),    icon: 'settings'       },
+    { id: 'meals',      label: t('settings.tabMeals'),      icon: 'utensils'       },
+    { id: 'budget',     label: t('settings.tabBudget'),     icon: 'wallet'         },
+    { id: 'shopping',   label: t('settings.tabShopping'),   icon: 'shopping-cart'  },
+    { id: 'sync',       label: t('settings.tabSync'),       icon: 'refresh-cw',    separatorBefore: true },
+    { id: 'account',    label: t('settings.tabAccount'),    icon: 'user',          separatorBefore: true },
+  ];
+  if (user?.role === 'admin') {
+    tabs.push(
+      { id: 'family',     label: t('settings.tabFamily'),    icon: 'users',    separatorBefore: true },
+      { id: 'api-tokens', label: t('settings.tabApiTokens'), icon: 'key'    },
+      { id: 'backup',     label: t('settings.tabBackup'),    icon: 'database' },
+    );
+  }
+  return tabs;
+}
+
+function renderSettingsSubTabs(container, user, activeTab) {
+  const settingsPage = container.querySelector('.settings-page');
+  if (!settingsPage) return;
+
+  const lastBanner = [...settingsPage.querySelectorAll('.settings-banner')].at(-1);
+  const anchor     = lastBanner ?? settingsPage.querySelector('.page__header');
+  if (!anchor) return;
+
+  renderSubTabs(anchor, {
+    tabs:           buildSettingsTabs(user),
+    activeId:       activeTab,
+    storageKey:     SETTINGS_TAB_KEY,
+    ariaLabel:      t('settings.tabsAriaLabel'),
+    insertPosition: 'afterend',
+    onChange: (tabId) => {
+      container.querySelectorAll('[data-panel]').forEach((panel) => {
+        panel.hidden = panel.dataset.panel !== tabId;
+      });
+    },
+  });
+}
+
+// --------------------------------------------------------
 // Event-Binding
 // --------------------------------------------------------
 
 function bindEvents(container, user, users, categories, icsSubscriptions, apiTokens) {
-  bindTabEvents(container);
   bindSettingsDateInputs(container);
   bindCategoryEvents(container);
   bindIcsEvents(container, user, icsSubscriptions);
@@ -1693,33 +1725,6 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
 }
 
 // --------------------------------------------------------
-// Tab-Navigation
-// --------------------------------------------------------
-
-function bindTabEvents(container) {
-  const tabList = container.querySelector('.settings-tabs');
-  if (!tabList) return;
-
-  tabList.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-tab]');
-    if (!btn) return;
-    const tab = btn.dataset.tab;
-
-    tabList.querySelectorAll('[data-tab]').forEach((b) => {
-      const active = b.dataset.tab === tab;
-      b.classList.toggle('settings-tab-btn--active', active);
-      b.setAttribute('aria-selected', String(active));
-    });
-
-    container.querySelectorAll('[data-panel]').forEach((panel) => {
-      panel.hidden = panel.dataset.panel !== tab;
-    });
-
-    try { sessionStorage.setItem(SETTINGS_TAB_KEY, tab); } catch (_) {}
-  });
-}
-
-
 function bindDeleteButtons(container, user) {
   container.querySelectorAll('[data-delete-user]').forEach((btn) => {
     btn.replaceWith(btn.cloneNode(true)); // Doppelte Listener vermeiden
