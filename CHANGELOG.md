@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.47.4] - 2026-05-06
+
+### Fixed
+- **Modal**: add `onClose` callback to `openModal()` so promise-based modals (`confirmModal`, `promptModal`, `selectModal`) resolve correctly on Escape and overlay-click without duplicate event listeners.
+- **Modal**: fix `_initialFormTimeout` leak — timeout is now tracked and cancelled on re-open or close, preventing stale dirty-check snapshots.
+- **Calendar**: replace `popup.innerHTML` with `insertAdjacentHTML` in the event popup (project constraint); add `truncateDescription()` to cap long event descriptions at 500 characters.
+- **Validation**: extend `DATETIME_RE` to accept ISO 8601 datetimes with milliseconds and timezone offsets; normalise datetime inputs to `YYYY-MM-DDTHH:MM` before storing.
+
+### Changed
+- **Docker**: switch from named Docker volume to host-mounted bind mounts; `DATA_DIR` (default `./data`) and `BACKUP_DIR` (default `./backups`) can be set in `.env` to control storage locations.
+- **Startup log**: include app version in the server start message.
+
 ## [0.47.3] - 2026-05-06
 
 ### Changed
