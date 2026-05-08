@@ -45,6 +45,13 @@ function currentMonth() {
   return nowIso().slice(0, 7);
 }
 
+function localDayRange(dateValue = new Date()) {
+  const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+
 function publicSession(row) {
   if (!row) return null;
   return {
@@ -152,12 +159,13 @@ function loadOpenSession(workerId = null) {
 }
 
 function loadTodaySession(workerId) {
+  const { start, end } = localDayRange();
   return db.get().prepare(`
     SELECT * FROM housekeeping_work_sessions
-    WHERE worker_id = ? AND substr(check_in, 1, 10) = substr(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'), 1, 10)
+    WHERE worker_id = ? AND check_in >= ? AND check_in < ?
     ORDER BY check_in DESC
     LIMIT 1
-  `).get(workerId);
+  `).get(workerId, start, end);
 }
 
 function housekeepingPaymentTasksEnabled(database = db.get()) {
