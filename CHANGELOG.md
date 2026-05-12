@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.52.2] - 2026-05-12
+
+### Fixed
+- Regenerated all PWA icon assets (`favicon.ico`, `favicon-32.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-192.png`, `icon-maskable-512.png`, `apple-touch-icon.png`) from `docs/logo.svg` so they show the correct violet gradient (`#8b5cf6` to `#6c3aed`) matching the brand colors in `tokens.css`
+
 ## [0.52.1] - 2026-05-12
 
 ### Changed
