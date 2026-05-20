@@ -1077,6 +1077,8 @@
     "loggingIn": "Connexion…",
     "tooManyAttempts": "Trop de tentatives. Veuillez patienter un moment.",
     "invalidCredentials": "Identifiants invalides.",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
     "version": "v{{version}}"
   },
   "install": {

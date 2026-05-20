@@ -1077,6 +1077,8 @@
     "loggingIn": "Entrando…",
     "tooManyAttempts": "Muitas tentativas. Por favor, aguarde.",
     "invalidCredentials": "Credenciais inválidas.",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
     "version": "v{{version}}"
   },
   "install": {

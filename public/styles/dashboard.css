@@ -127,7 +127,7 @@
 }
 
 .dashboard-metric__title {
-  font-size: var(--text-2xs);
+  font-size: var(--text-xs); /* was: var(--text-2xs) — WCAG minimum 12px */
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.07em;

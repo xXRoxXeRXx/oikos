@@ -1077,6 +1077,8 @@
     "loggingIn": "جارٍ تسجيل الدخول…",
     "tooManyAttempts": "محاولات كثيرة جداً. يرجى الانتظار قليلاً.",
     "invalidCredentials": "بيانات اعتماد غير صالحة.",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
     "version": "v{{version}}"
   },
   "install": {

@@ -1077,6 +1077,8 @@
     "loggingIn": "Вхід…",
     "tooManyAttempts": "Забагато спроб. Будь ласка, зачекайте.",
     "invalidCredentials": "Невірні облікові дані.",
+    "showPassword": "Показати пароль",
+    "hidePassword": "Приховати пароль",
     "version": "v{{version}}"
   },
   "install": {

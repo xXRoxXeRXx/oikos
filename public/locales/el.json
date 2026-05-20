@@ -1077,6 +1077,8 @@
     "loggingIn": "Σύνδεση…",
     "tooManyAttempts": "Πολλές προσπάθειες. Παρακαλώ περιμένετε λίγο.",
     "invalidCredentials": "Λανθασμένα στοιχεία σύνδεσης.",
+    "showPassword": "Εμφάνιση κωδικού",
+    "hidePassword": "Απόκρυψη κωδικού",
     "version": "v{{version}}"
   },
   "install": {

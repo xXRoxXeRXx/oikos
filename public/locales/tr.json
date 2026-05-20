@@ -1077,6 +1077,8 @@
     "loggingIn": "Giriş yapılıyor…",
     "tooManyAttempts": "Çok fazla deneme. Lütfen bir süre bekleyin.",
     "invalidCredentials": "Geçersiz kimlik bilgileri.",
+    "showPassword": "Şifreyi göster",
+    "hidePassword": "Şifreyi gizle",
     "version": "v{{version}}"
   },
   "install": {

@@ -1083,6 +1083,8 @@
     "loggingIn": "Wird angemeldet …",
     "tooManyAttempts": "Zu viele Versuche. Bitte warte kurz.",
     "invalidCredentials": "Ungültige Anmeldedaten.",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen",
     "version": "v{{version}}"
   },
   "install": {

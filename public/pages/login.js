@@ -6,6 +6,7 @@
 
 import { auth } from '/api.js';
 import { t } from '/i18n.js';
+import { esc } from '/utils/html.js';
 
 const VERSION_URL = '/api/v1/version';
 const DEFAULT_APP_NAME = 'Oikos';
@@ -28,17 +29,18 @@ function setAppBranding(appName) {
  */
 export async function render(container) {
   const storedAppName = getStoredAppName();
-  container.innerHTML = `
+  container.replaceChildren();
+  container.insertAdjacentHTML('beforeend', `
     <main class="login-page" id="main-content">
       <div class="login-hero">
-        <h1 class="login-hero__title">${storedAppName}</h1>
-        <p class="login-hero__tagline">${t('login.tagline')}</p>
+        <h1 class="login-hero__title">${esc(storedAppName)}</h1>
+        <p class="login-hero__tagline">${esc(t('login.tagline'))}</p>
       </div>
       <div class="login-card card card--padded">
 
         <form class="login-form" id="login-form" novalidate>
           <div class="form-group">
-            <label class="label" for="username">${t('login.usernameLabel')}</label>
+            <label class="label" for="username">${esc(t('login.usernameLabel'))}</label>
             <input
               class="input"
               type="text"
@@ -47,20 +49,20 @@ export async function render(container) {
               autocomplete="username"
               autocapitalize="none"
               autocorrect="off"
-              placeholder="${t('login.usernamePlaceholder')}"
+              placeholder="${esc(t('login.usernamePlaceholder'))}"
               required
             />
           </div>
 
           <div class="form-group">
-            <label class="label" for="password">${t('login.passwordLabel')}</label>
+            <label class="label" for="password">${esc(t('login.passwordLabel'))}</label>
             <input
               class="input"
               type="password"
               id="password"
               name="password"
               autocomplete="current-password"
-              placeholder="${t('login.passwordPlaceholder')}"
+              placeholder="${esc(t('login.passwordPlaceholder'))}"
               required
             />
           </div>
@@ -68,18 +70,44 @@ export async function render(container) {
           <div class="login-error" id="login-error" role="alert" aria-live="polite" hidden></div>
 
           <button type="submit" class="btn btn--primary login-form__submit" id="login-btn">
-            <span class="login-btn__label">${t('login.loginButton')}</span>
+            <span class="login-btn__label">${esc(t('login.loginButton'))}</span>
           </button>
         </form>
       </div>
       <p class="login-version" id="login-version"></p>
     </main>
-  `;
+  `);
 
   const form = container.querySelector('#login-form');
   const errorEl = container.querySelector('#login-error');
   const submitBtn = container.querySelector('#login-btn');
   const versionEl = container.querySelector('#login-version');
+
+  // K3: Passwort-Sichtbarkeits-Toggle
+  const passwordInput = form.querySelector('#password');
+  const passwordWrapper = document.createElement('div');
+  passwordWrapper.className = 'input-password-wrapper';
+  passwordInput.parentNode.insertBefore(passwordWrapper, passwordInput);
+  passwordWrapper.appendChild(passwordInput);
+
+  const toggleBtn = document.createElement('button');
+  toggleBtn.type = 'button';
+  toggleBtn.className = 'password-toggle';
+  toggleBtn.setAttribute('aria-label', t('login.showPassword'));
+  const toggleIcon = document.createElement('i');
+  toggleIcon.setAttribute('data-lucide', 'eye');
+  toggleIcon.setAttribute('aria-hidden', 'true');
+  toggleBtn.appendChild(toggleIcon);
+  passwordWrapper.appendChild(toggleBtn);
+  if (window.lucide) lucide.createIcons({ el: toggleBtn });
+
+  toggleBtn.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    toggleIcon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+    toggleBtn.setAttribute('aria-label', t(isPassword ? 'login.hidePassword' : 'login.showPassword'));
+    if (window.lucide) lucide.createIcons({ el: toggleBtn });
+  });
 
   setAppBranding(storedAppName);
 
@@ -102,7 +130,6 @@ export async function render(container) {
     const password = form.password.value;
 
     const usernameInput = form.querySelector('#username');
-    const passwordInput = form.querySelector('#password');
     const usernameGroup = usernameInput.closest('.form-group');
     const passwordGroup = passwordInput.closest('.form-group');
 

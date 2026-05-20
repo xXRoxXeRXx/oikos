@@ -1083,6 +1083,8 @@
     "loggingIn": "Logowanie…",
     "tooManyAttempts": "Za dużo prób. Poczekaj chwilę.",
     "invalidCredentials": "Nieprawidłowe dane logowania.",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło",
     "version": "v{{version}}"
   },
   "install": {

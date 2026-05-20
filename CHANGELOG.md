@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.52.14] - 2026-05-20
+
+### Fixed
+- Dashboard metric titles now use 12 px (`--text-xs`) instead of 10 px (`--text-2xs`), satisfying WCAG 2.1 minimum text size
+- Login form now includes a password visibility toggle (eye/eye-off icon) so users can verify what they are typing before submitting
+
 ## [0.52.13] - 2026-05-20
 
 ### Fixed

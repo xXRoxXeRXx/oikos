@@ -1077,6 +1077,8 @@
     "loggingIn": "Вход…",
     "tooManyAttempts": "Слишком много попыток. Подождите немного.",
     "invalidCredentials": "Неверные данные для входа.",
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
     "version": "v{{version}}"
   },
   "install": {

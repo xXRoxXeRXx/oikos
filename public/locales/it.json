@@ -1077,6 +1077,8 @@
     "loggingIn": "Accesso in corso…",
     "tooManyAttempts": "Troppi tentativi. Attendi un momento.",
     "invalidCredentials": "Credenziali non valide.",
+    "showPassword": "Mostra password",
+    "hidePassword": "Nascondi password",
     "version": "v{{version}}"
   },
   "install": {

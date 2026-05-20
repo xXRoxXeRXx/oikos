@@ -1077,6 +1077,8 @@
     "loggingIn": "लॉग इन हो रहा है…",
     "tooManyAttempts": "बहुत अधिक प्रयास। कृपया थोड़ा प्रतीक्षा करें।",
     "invalidCredentials": "अमान्य क्रेडेंशियल।",
+    "showPassword": "पासवर्ड दिखाएं",
+    "hidePassword": "पासवर्ड छिपाएं",
     "version": "v{{version}}"
   },
   "install": {

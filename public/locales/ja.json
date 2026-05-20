@@ -1077,6 +1077,8 @@
     "loggingIn": "ログイン中…",
     "tooManyAttempts": "試行回数が多すぎます。しばらくお待ちください。",
     "invalidCredentials": "ユーザー名またはパスワードが正しくありません。",
+    "showPassword": "パスワードを表示",
+    "hidePassword": "パスワードを非表示",
     "version": "v{{version}}"
   },
   "install": {

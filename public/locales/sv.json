@@ -1077,6 +1077,8 @@
     "loggingIn": "Loggar in...",
     "tooManyAttempts": "För många försök. Vänta ett ögonblick.",
     "invalidCredentials": "Ogiltiga användaruppgifter.",
+    "showPassword": "Visa lösenord",
+    "hidePassword": "Dölj lösenord",
     "version": "v{{version}}"
   },
   "install": {
