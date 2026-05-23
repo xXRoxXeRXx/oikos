@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.52.23] - 2026-05-23
+
+### Fixed
+- Scrolling on mobile Safari (iOS 26+) and narrow-viewport browsers no longer causes the entire page to go blank. Root cause: `backdrop-filter` on `position:sticky` elements inside an `overflow:auto` scroll container triggers a WebKit compositor bug that blanks the whole scroll container. Fixed by removing `backdrop-filter` from all sticky toolbars (Tasks, Notes, Contacts, Calendar, Housekeeping, Shopping list headers) and `.sticky-header`, replacing semi-transparent glass backgrounds with an opaque `var(--color-bg)`.
+
 ## [0.52.22] - 2026-05-23
 
 ### Added
