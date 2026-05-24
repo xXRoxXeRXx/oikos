@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.52.45] - 2026-05-24
+
+### Changed
+- Contacts now keep call and email actions prominent on mobile while moving export, maps, and delete into a compact overflow action so rows stay readable and safer to tap.
+- Documents and housekeeping empty states now guide setup with direct document, folder, and profile creation actions.
+- Budget category labels now normalize known raw category keys into localized display labels in charts and transaction metadata.
+
 ## [0.52.44] - 2026-05-24
 
 ### Changed
