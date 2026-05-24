@@ -341,13 +341,13 @@
 }
 
 .widget-greeting__title {
-  font-size: var(--text-xl);
+  /* Fluid: 18px (375px viewport) → 24px (1440px viewport) */
+  font-size: clamp(1.125rem, 0.56vw + 0.99rem, 1.5rem);
   font-weight: var(--font-weight-bold);
 }
 
 @media (min-width: 1024px) {
   .widget-greeting__title {
-    font-size: var(--text-xl);
     opacity: 0.85;
     white-space: nowrap;
     padding-top: 4px;

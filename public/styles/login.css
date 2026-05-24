@@ -12,7 +12,18 @@
   min-height: 100dvh;
   width: 100vw;
   padding: var(--space-4);
-  background-color: var(--color-bg);
+  background:
+    radial-gradient(
+      ellipse 160% 60% at 50% -10%,
+      color-mix(in srgb, var(--color-accent) 8%, transparent),
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 100% 40% at 100% 100%,
+      color-mix(in srgb, var(--color-accent-active) 5%, transparent),
+      transparent 60%
+    ),
+    var(--color-bg);
 }
 
 /* Hero-Bereich über dem Login-Formular */
