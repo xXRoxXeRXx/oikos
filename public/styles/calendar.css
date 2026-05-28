@@ -105,7 +105,7 @@
 .cal-toolbar__view-btn--active {
   background-color: var(--color-surface);
   color: var(--color-text-primary);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--glass-shadow-sm);
 }
 
 /* ── Mobile: kompakte Toolbar mit scrollbaren Ansichten ── */
@@ -199,7 +199,7 @@
 }
 
 .month-day:hover {
-  background-color: var(--color-surface-2);
+  background-color: var(--glass-bg-card-hover);
 }
 
 .month-day--outside {
@@ -449,7 +449,7 @@
   width: 100%;
   max-height: 180px;
   object-fit: cover;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-glass-inner);
   border: 1px solid var(--color-border-subtle);
 }
 
@@ -470,12 +470,12 @@
   min-height: 148px;
   padding: var(--space-5);
   border: 1.5px dashed color-mix(in srgb, var(--module-accent) 48%, var(--color-border));
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-glass-inner);
   background: color-mix(in srgb, var(--module-accent) 7%, var(--color-surface));
   color: var(--color-text-secondary);
   text-align: center;
   cursor: pointer;
-  transition: border-color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-glass);
 }
 
 .document-dropzone:hover,
@@ -494,7 +494,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-glass-inner);
   color: var(--module-accent);
   background: color-mix(in srgb, var(--module-accent) 15%, transparent);
 }
@@ -621,7 +621,7 @@
 }
 
 .agenda-event:hover {
-  background-color: var(--color-surface-2);
+  background-color: var(--glass-bg-card-hover);
 }
 
 .agenda-event__color {
@@ -698,9 +698,9 @@
   gap: var(--space-3);
   margin: calc(var(--space-2) * -1) 0 var(--space-4) 0;
   padding: var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-2);
+  border: 1px solid var(--glass-border-subtle);
+  border-radius: var(--radius-glass-inner);
+  background: var(--glass-bg-card);
   max-height: 320px;
   overflow-y: auto;
 }
@@ -889,13 +889,14 @@
 .event-popup {
   position: fixed;
   z-index: calc(var(--z-modal) - 1);
-  background-color: var(--color-surface);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  background-color: var(--glass-bg-card);
+  border-radius: var(--radius-glass-card);
+  box-shadow: var(--glass-shadow-lg);
+  border: 1px solid var(--glass-border-subtle);
   padding: var(--space-4);
   min-width: 240px;
   max-width: 320px;
-  animation: fadeIn var(--transition-fast) ease;
+  animation: fadeIn var(--transition-fast) var(--ease-glass);
 }
 
 .event-popup__color-bar {
@@ -927,7 +928,7 @@
   gap: var(--space-2);
   margin-top: var(--space-3);
   padding-top: var(--space-3);
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid var(--glass-border-subtle);
 }
 
 .event-popup__attachment {
@@ -938,7 +939,7 @@
   width: 100%;
   max-height: 220px;
   object-fit: cover;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-glass-inner);
   border: 1px solid var(--color-border-subtle);
 }
 
