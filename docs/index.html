@@ -153,6 +153,77 @@
       transition: all 0.2s ease;
     }
     .btn-secondary:hover { border-color: var(--text-3); transform: translateY(-1px); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: none; border: none; color: var(--text-2);
+      padding: 14px 20px; border-radius: 12px; font-weight: 600;
+      font-size: 1rem; cursor: pointer; transition: color 0.2s ease;
+      font-family: var(--ff-body); text-decoration: none;
+    }
+    .btn-ghost:hover { color: var(--text-1); }
+
+    /* Proof bar */
+    .proof-bar {
+      background: var(--bg-alt); border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      height: 44px; display: flex; align-items: center;
+    }
+    .proof-bar .wrap {
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px; font-size: 0.8125rem; font-weight: 500; color: var(--text-3);
+    }
+    .proof-sep { color: var(--border); }
+    #gh-stars-proof { color: var(--text-2); }
+    #gh-stars-proof:empty { display: none; }
+    #gh-stars-proof:empty + .proof-sep { display: none; }
+    @media (max-width: 600px) { .proof-dt-only { display: none; } }
+
+    /* Problem section */
+    .problem-section { padding: 80px 0; }
+    .problem-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+      margin-bottom: 40px;
+    }
+    .problem-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px;
+    }
+    .problem-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+    .problem-card p { font-size: 0.875rem; color: var(--text-2); line-height: 1.7; }
+    .prob-cta {
+      text-align: center; font-family: var(--ff-display);
+      font-size: 1.4rem; color: var(--accent);
+    }
+    @media (max-width: 900px) { .problem-grid { grid-template-columns: 1fr; } }
+
+    /* Setup steps */
+    .setup-steps {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+      margin: 32px 0 16px;
+    }
+    .setup-step {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px;
+    }
+    .setup-step-num {
+      font-family: var(--ff-display); font-size: 1.5rem;
+      color: var(--accent); margin-bottom: 12px; display: block;
+    }
+    .setup-step h3 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 6px; }
+    .setup-step p { font-size: 0.875rem; color: var(--text-2); line-height: 1.6; }
+    .setup-toggle {
+      background: none; border: 1px solid var(--border); color: var(--text-2);
+      padding: 8px 16px; border-radius: 8px; font-size: 0.875rem;
+      font-family: var(--ff-body); cursor: pointer; margin-bottom: 16px;
+      transition: all 0.15s ease;
+    }
+    .setup-toggle:hover { border-color: var(--text-3); color: var(--text-1); }
+    .setup-guide-link {
+      display: block; margin-top: 20px; font-size: 0.9375rem; font-weight: 500;
+    }
+    .footer-meta { font-size: 0.8125rem; color: var(--text-3); margin-bottom: 8px; }
+    @media (max-width: 900px) { .setup-steps { grid-template-columns: 1fr; } }
+
     .btn-primary svg, .btn-secondary svg { width: 18px; height: 18px; }
     .hero-tags {
       display: flex; justify-content: flex-start; gap: 8px; margin-top: 20px; flex-wrap: wrap;
