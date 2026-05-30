@@ -1,13 +1,20 @@
 <div align="center">
-  <img src="docs/logo.svg" alt="Oikos" width="120" />
+  <img src="docs/logo.svg" alt="Oikos" width="96" />
+
   <h1>Oikos</h1>
-  <p><strong>Self-hosted family planner for small households</strong></p>
+  <p><strong>The self-hosted family planner. Private, offline-capable, and beautiful.</strong></p>
 
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License"></a>
   <a href="https://github.com/ulsklyc/oikos/releases"><img src="https://img.shields.io/github/v/release/ulsklyc/oikos?style=flat-square&color=007AFF&label=release" alt="Latest Release"></a>
   <a href="https://github.com/ulsklyc/oikos/pkgs/container/oikos"><img src="https://img.shields.io/badge/ghcr.io-oikos-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker Image"></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%E2%89%A522-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js"></a>
   <a href="https://github.com/ulsklyc/oikos/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square" alt="PRs Welcome"></a>
+
+  <p>
+    <a href="docs/installation.md"><strong>→ Install</strong></a> &nbsp;·&nbsp;
+    <a href="https://ulsklyc.github.io/oikos/"><strong>Screenshots</strong></a> &nbsp;·&nbsp;
+    <a href="docs/SPEC.md"><strong>Docs</strong></a>
+  </p>
 </div>
 
 <br>
