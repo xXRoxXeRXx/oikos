@@ -19,36 +19,21 @@
 
 <br>
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dashboard-dark-mobile.png">
-        <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/dashboard-light-mobile.png">
-        <img src="docs/screenshots/dashboard-light-mobile.png" alt="Mobile Dashboard" width="280">
-      </picture>
-      <br>
-      <sub>Mobile Dashboard</sub>
-    </td>
-    <td align="center" width="50%">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dashboard-dark-desktop.png">
-        <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/dashboard-light-desktop.png">
-        <img src="docs/screenshots/dashboard-light-desktop.png" alt="Desktop Dashboard" width="480">
-      </picture>
-      <br>
-      <sub>Desktop Dashboard</sub>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/dashboard-dark-desktop.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/dashboard-light-desktop.png">
+    <img src="docs/screenshots/dashboard-light-desktop.png" alt="Oikos Dashboard" width="800">
+  </picture>
+  <br>
+  <sub>Toggle GitHub light/dark mode to see both themes &nbsp;·&nbsp; <a href="https://ulsklyc.github.io/oikos/">View all screenshots</a></sub>
+</div>
 
-<p align="center">
-  <sub>Toggle GitHub light/dark mode to see both themes • <a href="https://ulsklyc.github.io/oikos/">View all screenshots</a></sub>
-</p>
+<br>
 
-Oikos is a self-hosted web app for families who want to organize their everyday life in one place — without cloud accounts, subscriptions, or data leaving the house. It runs as a Docker container on any home server or NAS, is accessible from every device in the household, and can be installed as a PWA on phones and tablets.
+Oikos is a self-hosted web app that keeps your household organized — tasks, groceries, meals, calendar, budget, and more — in one private place, without cloud accounts or subscriptions. Runs as a Docker container on any home server or NAS. Accessible on every device. Installable as a PWA.
 
-The goal is a single, private place for everything that keeps a household running: shared tasks, grocery lists, meal plans, a family calendar, budgets, and more. Each module is independent — use what fits, ignore what doesn't.
+Each module is independent. Use what fits, skip what doesn't.
 
 ## Features
 
