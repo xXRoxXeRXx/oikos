@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.55.4] - 2026-05-30
+
 ### Changed
 - **README redesigned as a professional landing page:** Replaced the dense feature table with a compact two-column module grid, promoted the desktop screenshot to a large hero image (800 px, dark/light adaptive), added a CTA row (Install · Screenshots · Docs) below the badges, refined the tagline to "The self-hosted family planner. Private, offline-capable, and beautiful.", added horizontal-rule section separators for visual rhythm, and replaced the Documentation pipe-table with an inline link row.
 
