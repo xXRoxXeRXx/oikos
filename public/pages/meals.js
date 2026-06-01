@@ -180,7 +180,7 @@ export async function render(container, { user }) {
         <div style="margin:auto;padding:2rem;text-align:center;color:var(--color-text-disabled)">${t('meals.loadingIndicator')}</div>
       </div>
       <button class="page-fab" id="fab-new-meal" aria-label="${t('meals.addMealTitle')}">
-        <i data-lucide="plus" style="width:24px;height:24px" aria-hidden="true"></i>
+        <i data-lucide="plus" class="icon-xl" aria-hidden="true"></i>
       </button>
     </div>
   `);
@@ -284,7 +284,7 @@ function renderSlot(date, type, mealsForDay) {
           data-type="${type.key}"
           aria-label="${t('meals.addMeal', { type: type.label })}"
         >
-          <i data-lucide="plus" style="width:16px;height:16px;" aria-hidden="true"></i>
+          <i data-lucide="plus" class="icon-md" aria-hidden="true"></i>
         </button>
       </div>
     `;
@@ -314,17 +314,17 @@ function renderSlot(date, type, mealsForDay) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="${t('meals.openRecipe')}"
-          ><i data-lucide="link" style="width:14px;height:14px;" aria-hidden="true"></i></a>` : ''}
+          ><i data-lucide="link" class="icon-sm" aria-hidden="true"></i></a>` : ''}
           ${canTransfer ? `<button class="meal-card__action-btn meal-card__action-btn--shopping"
             data-action="transfer-meal"
             data-meal-id="${meal.id}"
             aria-label="${t('meals.transferToShoppingList')}"
-          ><i data-lucide="shopping-cart" style="width:14px;height:14px;" aria-hidden="true"></i></button>` : ''}
+          ><i data-lucide="shopping-cart" class="icon-sm" aria-hidden="true"></i></button>` : ''}
           <button class="meal-card__action-btn"
             data-action="delete-meal"
             data-meal-id="${meal.id}"
             aria-label="${t('meals.deleteMeal')}"
-          ><i data-lucide="trash-2" style="width:14px;height:14px;" aria-hidden="true"></i></button>
+          ><i data-lucide="trash-2" class="icon-sm" aria-hidden="true"></i></button>
         </div>
       </div>
     </div>
@@ -853,7 +853,7 @@ function buildModalContent({ mode, date, mealType, meal }) {
       <label class="form-label">${t('meals.ingredientsLabel')}</label>
       <div class="ingredient-list" id="ingredient-list">${ingRows}</div>
       <button class="add-ingredient-btn" id="add-ingredient-btn" type="button">
-        <i data-lucide="plus" style="width:14px;height:14px;" aria-hidden="true"></i>
+        <i data-lucide="plus" class="icon-sm" aria-hidden="true"></i>
         ${t('meals.addIngredient')}
       </button>
     </div>
@@ -861,7 +861,7 @@ function buildModalContent({ mode, date, mealType, meal }) {
     ${isEdit && hasIngOpen ? `
     <div class="shopping-transfer">
       <div class="shopping-transfer__label">
-        <i data-lucide="shopping-cart" style="width:14px;height:14px;" aria-hidden="true"></i>
+        <i data-lucide="shopping-cart" class="icon-sm" aria-hidden="true"></i>
         ${t('meals.transferLabel')}
       </div>
       <select class="shopping-transfer__select" id="transfer-list-select">${listOpts}</select>
@@ -891,7 +891,7 @@ function ingredientRowHTML(name, qty, id, category = DEFAULT_CATEGORY_NAME) {
       <input type="text" class="form-input ingredient-row__qty" placeholder="${t('meals.ingredientQtyPlaceholder')}" value="${esc(qty)}">
       <select class="form-input ingredient-row__cat" aria-label="${t('meals.ingredientCategoryLabel')}">${catOptions}</select>
       <button class="ingredient-row__remove" data-action="remove-ingredient" type="button" aria-label="${t('meals.removeIngredient')}">
-        <i data-lucide="x" style="width:14px;height:14px;" aria-hidden="true"></i>
+        <i data-lucide="x" class="icon-sm" aria-hidden="true"></i>
       </button>
     </div>
   `;

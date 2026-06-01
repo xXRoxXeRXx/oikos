@@ -51,6 +51,7 @@
     "navigation": "Nawigacja",
     "quickActions": "Szybkie akcje",
     "more": "Więcej",
+    "moreActiveLabel": "Więcej, {{section}} aktywne",
     "recipes": "Przepisy",
     "documents": "Dokumenty",
     "kitchen": "Kuchnia",

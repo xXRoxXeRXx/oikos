@@ -52,6 +52,7 @@
     "quickActions": "快捷操作",
     "recipes": "食谱",
     "more": "更多",
+    "moreActiveLabel": "更多，{{section}} 已激活",
     "documents": "文档",
     "kitchen": "厨房",
     "search": "搜索",

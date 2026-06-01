@@ -52,6 +52,7 @@
     "quickActions": "त्वरित क्रियाएं",
     "recipes": "रेसिपी",
     "more": "और",
+    "moreActiveLabel": "अधिक, {{section}} सक्रिय",
     "documents": "दस्तावेज़",
     "kitchen": "रसोई",
     "search": "खोज",

@@ -75,13 +75,13 @@ test('mobile More sheet trigger controls its dialog and traps keyboard focus', (
   assert.match(source, /removeEventListener\('keydown',\s*moreSheetTrap/);
 });
 
-test('More button active state keeps visible and accessible labels in sync', () => {
+test('More button active state keeps visible More identity and accessible active context', () => {
   const source = read('./public/router.js');
 
   assert.match(source, /function\s+setMoreButtonState/);
   assert.match(source, /moreBtn\.setAttribute\('aria-current',\s*'page'\)/);
   assert.match(source, /moreBtn\.setAttribute\('aria-label',\s*moreLabel\)/);
-  assert.match(source, /moreBtn\.setAttribute\('title',\s*moreLabel\)/);
+  assert.match(source, /moreBtn\.setAttribute\('title',\s*t\('nav\.more'\)\)/);
   assert.doesNotMatch(source, /moreBtn\.toggleAttribute\('aria-current',\s*inMoreSheet\)/);
 });
 
@@ -250,6 +250,53 @@ test('phase 4 keeps Kitchen navigation identity stable', () => {
   assert.doesNotMatch(routerSource, /kitchenBtnIcon\)\s*kitchenBtnIcon\.dataset\.lucide\s*=\s*kitchenTarget\.icon/);
   assert.doesNotMatch(routerSource, /sidebarLabel\)\s*sidebarLabel\.textContent\s*=\s*kitchenTarget\.label/);
   assert.doesNotMatch(routerSource, /sidebarIcon\)\s*sidebarIcon\.dataset\.lucide\s*=\s*kitchenTarget\.icon/);
+});
+
+test('phase 4 keeps More bottom-nav identity stable while exposing active section accessibly', () => {
+  const routerSource = read('./public/router.js');
+
+  assert.match(routerSource, /t\('nav\.moreActiveLabel',\s*\{\s*section:\s*activeSecondary\.label\s*\}\)/);
+  assert.match(routerSource, /moreBtnLabel\.textContent\s*=\s*t\('nav\.more'\)/);
+  assert.match(routerSource, /replaceNavIcon\(moreBtn,\s*'\.nav-item__icon',\s*'grid-2x2'\)/);
+  assert.doesNotMatch(routerSource, /const\s+moreIcon\s*=\s*activeSecondary\s*\?\s*activeSecondary\.icon/);
+  assert.doesNotMatch(routerSource, /moreBtnLabel\.textContent\s*=\s*moreLabel/);
+});
+
+test('phase 4 locales include More active accessible label', () => {
+  const localesDir = new URL('./public/locales/', import.meta.url);
+  const files = readdirSync(localesDir).filter((f) => f.endsWith('.json'));
+
+  assert.ok(files.length >= 16, 'expected at least 16 locale files');
+  for (const file of files) {
+    const data = JSON.parse(readFileSync(new URL(file, localesDir), 'utf8'));
+    assert.equal(typeof data.nav?.moreActiveLabel, 'string', `${file}: nav.moreActiveLabel must be a string`);
+    assert.match(data.nav.moreActiveLabel, /\{\{section\}\}/, `${file}: nav.moreActiveLabel must include {{section}}`);
+  }
+});
+
+test('phase 4 touched icon markup uses icon classes instead of inline icon sizing', () => {
+  const files = [
+    './public/router.js',
+    './public/pages/settings.js',
+    './public/pages/meals.js',
+    './public/pages/recipes.js',
+    './public/pages/shopping.js',
+  ];
+
+  for (const file of files) {
+    const source = read(file);
+    assert.doesNotMatch(source, /<i\s+[^>]*data-lucide=[^>]*style=["'][^"']*(?:width|height):/s, `${file} must not inline-size Lucide placeholders`);
+    assert.doesNotMatch(source, /\.style\.cssText\s*=\s*['"][^'"]*(?:width|height):/, `${file} must not assign inline icon dimensions`);
+  }
+});
+
+test('phase 4 settings theme toggle uses Lucide placeholders instead of inline SVG icons', () => {
+  const settings = read('./public/pages/settings.js');
+
+  assert.doesNotMatch(settings, /<svg\s+width="18"\s+height="18"[\s\S]*?data-theme-value=/);
+  assert.match(settings, /data-lucide="monitor"/);
+  assert.match(settings, /data-lucide="sun"/);
+  assert.match(settings, /data-lucide="moon"/);
 });
 
 test('phase 4 opens search from More sheet in a single handoff', () => {

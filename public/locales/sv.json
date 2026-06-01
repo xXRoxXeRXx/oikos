@@ -52,6 +52,7 @@
     "quickActions": "Snabba åtgärder",
     "recipes": "Recept",
     "more": "Mer",
+    "moreActiveLabel": "Mer, {{section}} aktivt",
     "documents": "Dokument",
     "kitchen": "Kök",
     "search": "Sök",

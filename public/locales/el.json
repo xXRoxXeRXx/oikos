@@ -52,6 +52,7 @@
     "quickActions": "Γρήγορες ενέργειες",
     "recipes": "Συνταγές",
     "more": "Περισσότερα",
+    "moreActiveLabel": "Περισσότερα, {{section}} ενεργό",
     "documents": "Έγγραφα",
     "kitchen": "Κουζίνα",
     "search": "Αναζήτηση",

@@ -52,6 +52,7 @@
     "quickActions": "Швидкі дії",
     "recipes": "Рецепти",
     "more": "Більше",
+    "moreActiveLabel": "Більше, {{section}} активно",
     "documents": "Документи",
     "kitchen": "Кухня",
     "search": "Пошук",

@@ -52,6 +52,7 @@
     "quickActions": "الإجراءات السريعة",
     "recipes": "الوصفات",
     "more": "المزيد",
+    "moreActiveLabel": "المزيد، {{section}} نشط",
     "documents": "المستندات",
     "kitchen": "المطبخ",
     "search": "بحث",

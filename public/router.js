@@ -985,7 +985,7 @@ function showShortcutsModal() {
     <div class="modal-panel__header">
       <span class="modal-panel__title">${esc(t('shortcuts.help'))}</span>
       <button class="modal-panel__close btn--ghost" aria-label="${esc(t('common.close'))}">
-        <i data-lucide="x" style="width:16px;height:16px;" aria-hidden="true"></i>
+        <i data-lucide="x" class="icon-md" aria-hidden="true"></i>
       </button>
     </div>
     <div class="modal-panel__body">
@@ -1553,8 +1553,9 @@ function kitchenNavAriaLabel(path) {
  */
 function setMoreButtonState(moreBtn, activeSecondary) {
   const inMoreSheet = !!activeSecondary;
-  const moreLabel = activeSecondary ? activeSecondary.label : t('nav.more');
-  const moreIcon = activeSecondary ? activeSecondary.icon : 'grid-2x2';
+  const moreLabel = activeSecondary
+    ? t('nav.moreActiveLabel', { section: activeSecondary.label })
+    : t('nav.more');
 
   moreBtn.classList.toggle('nav-item--active', inMoreSheet);
   if (inMoreSheet) {
@@ -1568,11 +1569,11 @@ function setMoreButtonState(moreBtn, activeSecondary) {
   }
 
   moreBtn.setAttribute('aria-label', moreLabel);
-  moreBtn.setAttribute('title', moreLabel);
+  moreBtn.setAttribute('title', t('nav.more'));
 
   const moreBtnLabel = moreBtn.querySelector('.nav-item__label');
-  if (moreBtnLabel) moreBtnLabel.textContent = moreLabel;
-  replaceNavIcon(moreBtn, '.nav-item__icon', moreIcon);
+  if (moreBtnLabel) moreBtnLabel.textContent = t('nav.more');
+  replaceNavIcon(moreBtn, '.nav-item__icon', 'grid-2x2');
 }
 
 function updateNav(path) {

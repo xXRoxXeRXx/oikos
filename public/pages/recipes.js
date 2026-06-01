@@ -271,7 +271,7 @@ function buildIngredientRow(name, qty, category = DEFAULT_CATEGORY_NAME) {
   removeBtn.setAttribute('aria-label', t('meals.removeIngredient'));
   const icon = document.createElement('i');
   icon.dataset.lucide = 'x';
-  icon.style.cssText = 'width:14px;height:14px;';
+  icon.className = 'icon-sm';
   icon.setAttribute('aria-hidden', 'true');
   removeBtn.appendChild(icon);
 

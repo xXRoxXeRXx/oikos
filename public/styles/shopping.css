@@ -499,3 +499,10 @@
   padding: var(--space-12);
   text-align: center;
 }
+
+.no-lists__icon {
+  width: var(--target-lg);
+  height: var(--target-lg);
+  color: var(--color-text-disabled);
+  flex-shrink: 0;
+}

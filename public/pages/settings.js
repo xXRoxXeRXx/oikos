@@ -294,15 +294,15 @@ export async function render(container, { user }) {
             <h3 class="settings-card__title">${t('settings.cardAppearance')}</h3>
             <div class="theme-toggle" id="theme-toggle">
               <button class="theme-toggle__btn ${currentTheme() === 'system' ? 'theme-toggle__btn--active' : ''}" data-theme-value="system" aria-label="${t('settings.themeSysLabel')}" aria-pressed="${currentTheme() === 'system' ? 'true' : 'false'}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <i data-lucide="monitor" class="icon-md" aria-hidden="true"></i>
                 ${t('settings.themeSystem')}
               </button>
               <button class="theme-toggle__btn ${currentTheme() === 'light' ? 'theme-toggle__btn--active' : ''}" data-theme-value="light" aria-label="${t('settings.themeLightLabel')}" aria-pressed="${currentTheme() === 'light' ? 'true' : 'false'}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                <i data-lucide="sun" class="icon-md" aria-hidden="true"></i>
                 ${t('settings.themeLight')}
               </button>
               <button class="theme-toggle__btn ${currentTheme() === 'dark' ? 'theme-toggle__btn--active' : ''}" data-theme-value="dark" aria-label="${t('settings.themeDarkLabel')}" aria-pressed="${currentTheme() === 'dark' ? 'true' : 'false'}">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <i data-lucide="moon" class="icon-md" aria-hidden="true"></i>
                 ${t('settings.themeDark')}
               </button>
             </div>
@@ -2486,16 +2486,16 @@ function categoryRowHtml(cat, isFirst, isLast) {
         <button class="btn btn--icon btn--ghost" data-action="move-cat-up" data-id="${cat.id}"
                 aria-label="${t('settings.shoppingCategoryMoveUp')}"
                 ${isFirst ? 'disabled' : ''}>
-          <i data-lucide="chevron-up" style="width:16px;height:16px" aria-hidden="true"></i>
+          <i data-lucide="chevron-up" class="icon-md" aria-hidden="true"></i>
         </button>
         <button class="btn btn--icon btn--ghost" data-action="move-cat-down" data-id="${cat.id}"
                 aria-label="${t('settings.shoppingCategoryMoveDown')}"
                 ${isLast ? 'disabled' : ''}>
-          <i data-lucide="chevron-down" style="width:16px;height:16px" aria-hidden="true"></i>
+          <i data-lucide="chevron-down" class="icon-md" aria-hidden="true"></i>
         </button>
         <button class="btn btn--icon btn--danger-outline" data-action="delete-cat" data-id="${cat.id}"
                 aria-label="${t('settings.shoppingCategoryDelete')}">
-          <i data-lucide="trash-2" style="width:14px;height:14px" aria-hidden="true"></i>
+          <i data-lucide="trash-2" class="icon-sm" aria-hidden="true"></i>
         </button>
       </div>
     </li>`;
@@ -2708,7 +2708,7 @@ function renderIcsList(container, subs, user) {
       syncBtn.dataset.id = sub.id;
       const syncIcon = document.createElement('i');
       syncIcon.setAttribute('data-lucide', 'refresh-cw');
-      syncIcon.style.cssText = 'width:16px;height:16px';
+      syncIcon.className = 'icon-md';
       syncIcon.setAttribute('aria-hidden', 'true');
       syncBtn.appendChild(syncIcon);
       actions.appendChild(syncBtn);
@@ -2721,7 +2721,7 @@ function renderIcsList(container, subs, user) {
       editBtn.dataset.id = sub.id;
       const editIcon = document.createElement('i');
       editIcon.setAttribute('data-lucide', 'pencil');
-      editIcon.style.cssText = 'width:14px;height:14px';
+      editIcon.className = 'icon-sm';
       editIcon.setAttribute('aria-hidden', 'true');
       editBtn.appendChild(editIcon);
       actions.appendChild(editBtn);
@@ -2735,7 +2735,7 @@ function renderIcsList(container, subs, user) {
       delBtn.dataset.name = sub.name;
       const delIcon = document.createElement('i');
       delIcon.setAttribute('data-lucide', 'trash-2');
-      delIcon.style.cssText = 'width:14px;height:14px';
+      delIcon.className = 'icon-sm';
       delIcon.setAttribute('aria-hidden', 'true');
       delBtn.appendChild(delIcon);
       actions.appendChild(delBtn);

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.55.9] - 2026-06-01
+
+### Changed
+- **Navigation identity and icon language tightened:** Kept Kitchen and More bottom-nav labels stable while exposing active subsections through localized accessible labels, replaced isolated inline SVG/icon sizing with Lucide placeholders and icon utility classes in the touched navigation, Kitchen, Shopping, and Settings surfaces, and added More active labels across all locales.
+
 ## [0.55.8] - 2026-06-01
 
 ### Changed

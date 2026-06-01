@@ -52,6 +52,7 @@
     "quickActions": "Hızlı işlemler",
     "recipes": "Tarifler",
     "more": "Daha Fazla",
+    "moreActiveLabel": "Daha fazla, {{section}} aktif",
     "documents": "Belgeler",
     "kitchen": "Mutfak",
     "search": "Ara",

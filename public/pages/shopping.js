@@ -121,7 +121,7 @@ function renderListContent(container) {
     content.replaceChildren();
     content.insertAdjacentHTML('beforeend', `
       <div class="no-lists">
-        <i data-lucide="shopping-cart" style="width:56px;height:56px;color:var(--color-text-disabled)" aria-hidden="true"></i>
+        <i data-lucide="shopping-cart" class="no-lists__icon" aria-hidden="true"></i>
         <div style="font-size:var(--text-lg);font-weight:var(--font-weight-semibold)">${t('shopping.noLists')}</div>
         <div style="font-size:var(--text-sm);color:var(--color-text-secondary)">
           ${t('shopping.noListsDescription')}
@@ -146,13 +146,13 @@ function renderListContent(container) {
         ${checkedCount > 0 ? `
           <button class="btn btn--ghost" data-action="clear-checked"
                   style="font-size:var(--text-sm);color:var(--color-text-secondary)">
-            <i data-lucide="trash-2" style="width:15px;height:15px" aria-hidden="true"></i>
+            <i data-lucide="trash-2" class="icon-md" aria-hidden="true"></i>
             ${t('shopping.clearChecked', { count: checkedCount })}
           </button>` : ''}
         <button class="btn btn--ghost btn--icon" data-action="delete-list"
                 data-id="${state.activeList.id}" aria-label="${t('shopping.deleteListLabel')}"
                 style="color:var(--color-text-secondary)">
-          <i data-lucide="trash" style="width:18px;height:18px" aria-hidden="true"></i>
+          <i data-lucide="trash" class="icon-md" aria-hidden="true"></i>
         </button>
       </div>
     </div>
@@ -576,7 +576,7 @@ function updateItemsList(container) {
       header.insertAdjacentHTML('afterbegin', `
         <button class="btn btn--ghost" data-action="clear-checked"
                 style="font-size:var(--text-sm);color:var(--color-text-secondary)">
-          <i data-lucide="trash-2" style="width:15px;height:15px" aria-hidden="true"></i>
+          <i data-lucide="trash-2" class="icon-md" aria-hidden="true"></i>
           ${t('shopping.clearChecked', { count: checkedCount })}
         </button>`);
       if (window.lucide) window.lucide.createIcons();
@@ -586,7 +586,7 @@ function updateItemsList(container) {
       } else {
         clearBtn.replaceChildren();
         clearBtn.insertAdjacentHTML('beforeend', `
-          <i data-lucide="trash-2" style="width:15px;height:15px" aria-hidden="true"></i>
+          <i data-lucide="trash-2" class="icon-md" aria-hidden="true"></i>
           ${t('shopping.clearChecked', { count: checkedCount })}`);
         if (window.lucide) window.lucide.createIcons();
       }
@@ -890,7 +890,7 @@ export async function render(container, { user }) {
       <div class="list-tabs-bar" id="list-tabs-bar"></div>
       <div id="list-content" style="flex:1;display:flex;flex-direction:column;overflow:hidden"></div>
       <button class="page-fab" id="fab-new-item" aria-label="${t('shopping.addItemLabel')}">
-        <i data-lucide="plus" style="width:24px;height:24px" aria-hidden="true"></i>
+        <i data-lucide="plus" class="icon-xl" aria-hidden="true"></i>
       </button>
     </div>
   `);

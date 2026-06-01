@@ -52,6 +52,7 @@
     "quickActions": "Acciones rápidas",
     "recipes": "Recetas",
     "more": "Más",
+    "moreActiveLabel": "Más, {{section}} activo",
     "documents": "Documentos",
     "kitchen": "Cocina",
     "search": "Buscar",

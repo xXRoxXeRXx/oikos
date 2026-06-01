@@ -52,6 +52,7 @@
     "quickActions": "クイックアクション",
     "recipes": "レシピ",
     "more": "もっと見る",
+    "moreActiveLabel": "その他、{{section}} がアクティブ",
     "documents": "書類",
     "kitchen": "キッチン",
     "search": "検索",
