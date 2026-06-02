@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Oikos</Name>
+  <Repository>ghcr.io/ulsklyc/oikos:latest</Repository>
+  <Registry>https://ghcr.io/ulsklyc/oikos</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <WebUI>http://[IP]:[PORT:3000]</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/ulsklyc/oikos/main/templates/oikos.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/ulsklyc/oikos/main/public/icons/icon-512.png</Icon>
+
+  <Overview>Oikos is a self-hosted family planner PWA. It keeps your household organized — tasks, groceries, meals, recipes, calendar, documents, budget, housekeeping, notes, contacts and birthdays — in one private place, without cloud accounts or subscriptions. Each module is independent: use what fits, skip what doesn't. Polished mobile-first interface, offline-capable PWA, optional CalDAV/CardDAV and Google Calendar sync, OIDC SSO, and encrypted-at-rest storage (SQLCipher).
+
+REQUIRED: Set a long random SESSION_SECRET. RECOMMENDED: Set a strong DB_ENCRYPTION_KEY to encrypt the database at rest — without it the database and any synced calendar/contact credentials are stored unencrypted. Generate secrets with: openssl rand -base64 48
+
+After first start, open the WebUI and create your admin account.</Overview>
+
+  <!-- Either Support or Project is required -->
+  <Support>https://github.com/ulsklyc/oikos/issues</Support>
+  <Project>https://github.com/ulsklyc/oikos</Project>
+  <ReadMe>https://raw.githubusercontent.com/ulsklyc/oikos/main/README.md</ReadMe>
+
+  <Category>Productivity: HomeAutomation: Tools:</Category>
+  <License>MIT</License>
+
+  <Screenshot>https://raw.githubusercontent.com/ulsklyc/oikos/main/docs/screenshots/dashboard-light-desktop.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/ulsklyc/oikos/main/docs/screenshots/calendar-light-desktop.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/ulsklyc/oikos/main/docs/screenshots/meals-light-desktop.png</Screenshot>
+  <Screenshot>https://raw.githubusercontent.com/ulsklyc/oikos/main/docs/screenshots/budget-light-desktop.png</Screenshot>
+
+  <!-- WebUI port (container always listens on 3000) -->
+  <Config Name="WebUI Port" Target="3000" Default="3000" Mode="tcp" Description="Host port for the Oikos web interface." Type="Port" Display="always" Required="true" Mask="false">3000</Config>
+
+  <!-- Persistent data -->
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/oikos/data" Mode="rw" Description="Database and stored app data (uploads, documents)." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/oikos/data</Config>
+  <Config Name="Backups" Target="/backups" Default="/mnt/user/appdata/oikos/backups" Mode="rw" Description="Destination folder for scheduled and manual database backups." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/oikos/backups</Config>
+  <Config Name="Modules (optional)" Target="/app/modules" Default="/mnt/user/appdata/oikos/modules" Mode="rw" Description="Optional: drop-in folder for additional Oikos modules. Leave default if unused." Type="Path" Display="advanced" Required="false" Mask="false">/mnt/user/appdata/oikos/modules</Config>
+
+  <!-- Required secret -->
+  <Config Name="SESSION_SECRET" Target="SESSION_SECRET" Default="" Mode="" Description="REQUIRED. A long random string used to sign sessions. Generate with: openssl rand -base64 48" Type="Variable" Display="always" Required="true" Mask="true"/>
+
+  <!-- Recommended secret -->
+  <Config Name="DB_ENCRYPTION_KEY" Target="DB_ENCRYPTION_KEY" Default="" Mode="" Description="RECOMMENDED. Strong key to encrypt the database at rest (SQLCipher). Leave empty for unencrypted SQLite. Cannot be changed later without re-encrypting. Generate with: openssl rand -base64 48" Type="Variable" Display="always" Required="false" Mask="true"/>
+
+  <!-- Timezone -->
+  <Config Name="Timezone" Target="TZ" Default="Europe/Berlin" Mode="" Description="Container timezone, e.g. Europe/Berlin. Affects scheduled backups and reminders." Type="Variable" Display="always" Required="false" Mask="false">Europe/Berlin</Config>
+
+  <!-- HTTPS / cookie security -->
+  <Config Name="SESSION_SECURE" Target="SESSION_SECURE" Default="false" Mode="" Description="Set to true only when serving Oikos over HTTPS behind a reverse proxy. Keep false for direct HTTP access on the LAN." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="TRUST_PROXY" Target="TRUST_PROXY" Default="loopback" Mode="" Description="Use 1 behind one reverse proxy (Caddy/nginx/Traefik), or 'loopback' for direct (no proxy) access." Type="Variable" Display="advanced" Required="false" Mask="false">loopback</Config>
+
+  <!-- Database path (advanced; matches the /data mount) -->
+  <Config Name="DB_PATH" Target="DB_PATH" Default="/data/oikos.db" Mode="" Description="Path to the SQLite database inside the container. Keep default unless you know what you are doing." Type="Variable" Display="advanced" Required="false" Mask="false">/data/oikos.db</Config>
+
+  <!-- Weather (optional) -->
+  <Config Name="OPENWEATHER_API_KEY" Target="OPENWEATHER_API_KEY" Default="" Mode="" Description="Optional. OpenWeatherMap API key to enable the weather widget." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="OPENWEATHER_CITY" Target="OPENWEATHER_CITY" Default="" Mode="" Description="Optional. City for the weather widget, e.g. Berlin." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- Backups (optional) -->
+  <Config Name="BACKUP_ENABLED" Target="BACKUP_ENABLED" Default="true" Mode="" Description="Optional. Enable automated database backups (default: true)." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="BACKUP_SCHEDULE" Target="BACKUP_SCHEDULE" Default="0 2 * * *" Mode="" Description="Optional. Cron schedule for automated backups (default: 2 AM daily)." Type="Variable" Display="advanced" Required="false" Mask="false">0 2 * * *</Config>
+  <Config Name="BACKUP_KEEP" Target="BACKUP_KEEP" Default="7" Mode="" Description="Optional. Number of backups to retain (default: 7)." Type="Variable" Display="advanced" Required="false" Mask="false">7</Config>
+</Container>
