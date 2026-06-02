@@ -19,7 +19,13 @@ git clone https://github.com/ulsklyc/oikos.git && cd oikos
 bash install.sh
 ```
 
-The script checks prerequisites, generates security keys, configures optional integrations, starts the container (Docker or Podman — auto-detected), and creates your admin account.
+The script checks prerequisites, generates security keys, configures optional integrations, starts the container (Docker or Podman — auto-detected), and creates your admin account. Like the web installer, it is fully localized in 16 languages and auto-detects yours from the shell environment (`LANG`/`LC_ALL`).
+
+Force a specific language with `--lang` (one of `de en es fr it sv el ru tr zh ja ar hi pt uk pl`):
+
+```bash
+bash install.sh --lang de
+```
 
 Non-interactive mode (CI/provisioning — provide your own `.env`):
 

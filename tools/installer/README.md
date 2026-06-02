@@ -53,6 +53,14 @@ detects the browser language automatically (`de` is the reference locale, `en`
 the fallback). Translations live in `tools/installer/locales/*.json` and are
 loaded by `i18n-mini.js`, which mirrors the app's locale resolution.
 
+The **CLI installer** (`install.sh` at the repo root) is localized into the same
+16 languages. It detects the language from the shell environment
+(`OIKOS_INSTALLER_LANG` > `LC_ALL` > `LC_MESSAGES` > `LANG`) and accepts a
+`--lang <code>` override. Its strings live in `tools/installer/locales/cli/<lang>.sh`
+— one sourced shell file per language that sets `MSG_*` variables; `en.sh` is the
+fallback base, the active language overlays it. Key parity across all 16 files is
+enforced by `test-installer-cli-i18n.js`.
+
 ## Design
 
 The wizard reuses the app's design language: shared design tokens
@@ -71,5 +79,6 @@ management, and labelled controls).
   `GET /api/status`, `POST /api/create-admin`.
 - `env-schema.js` — the single source of truth (`ENV_SCHEMA`) for every
   configurable variable, its group, default, and whether it is written to `.env`.
-- `i18n-mini.js` + `locales/*.json` — localization.
+- `i18n-mini.js` + `locales/*.json` — web-wizard localization.
+- `locales/cli/*.sh` — CLI-installer localization (sourced by `install.sh`).
 - `install.html` — the wizard UI.

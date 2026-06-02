@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.57.0] - 2026-06-02
+
+### Added
+- The CLI installer (`install.sh`) is now fully localized into all 16 supported languages, matching the web installer. It auto-detects the language from the shell environment (`OIKOS_INSTALLER_LANG` > `LC_ALL` > `LC_MESSAGES` > `LANG`) and accepts a `--lang <code>` override. Translations live in per-language `tools/installer/locales/cli/<lang>.sh` files — `en` is the fallback base, the active language overlays it.
+
 ## [0.56.0] - 2026-06-02
 
 ### Added
