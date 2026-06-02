@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.57.1] - 2026-06-02
+
+### Changed
+- Updated `openid-client` to v6. This is an internal rewrite of the OIDC/SSO implementation; the four `OIDC_*` environment variables and the login flow are unchanged (the client-secret token-endpoint authentication method is preserved). Minor bumps to `googleapis` and `puppeteer`.
+
+### Security
+- Resolved a transitive denial-of-service advisory in the `qs` dependency (GHSA-q8mj-m7cp-5q26).
+
 ## [0.57.0] - 2026-06-02
 
 ### Added
