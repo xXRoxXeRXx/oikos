@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.55.19] - 2026-06-02
+
+### Added
+- Installer wizard is fully localized into all 16 supported languages with automatic browser-language detection, via its own `tools/installer/locales/*.json` and `i18n-mini.js` (mirrors the app's locale resolution; `de` is the reference, `en` the fallback).
+- New optional "Advanced" installer step covering reverse-proxy/HTTPS deployments (sets `SESSION_SECURE`/`TRUST_PROXY`), Single Sign-On (OIDC), and automatic backups — all configurable without hand-editing `.env`.
+- Installer verifies Docker prerequisites before the wizard starts and surfaces container start/spawn errors in the UI instead of failing silently.
+- `GET /api/preflight` reports whether an existing `.env` file and a running `oikos` container are present.
+
+### Changed
+- Installer adopts the app's design language: shared design tokens and Plus Jakarta Sans (violet accent, matching radii/shadows, automatic dark mode), served read-only from the repo.
+- Installer wizard now meets WCAG 2.1 AA — keyboard-operable accordion buttons (`aria-expanded`/`aria-controls`), `role="alert"` error banners, a live `role="status"` Docker-status region, focus moved to the active step heading on navigation, labelled password-visibility toggles, a step counter derived from the step list, and a unified error-banner style.
+- `docker-compose.yml` maps the chosen host port (`${OIKOS_HTTP_PORT:-3000}:3000`) and derives `SESSION_SECURE` from `.env` (`${SESSION_SECURE:-false}`), so reverse-proxy setups take effect without manual edits; default `3000`/`false` behaviour is unchanged.
+
+### Fixed
+- Installer persists the user-selected timezone (`TZ`) and HTTP port (`OIKOS_HTTP_PORT`) to `.env` so the choices actually take effect; `install.sh` gains the same fields for CLI parity.
+- Installer backs up an existing `.env` to `.env.bak-<ISO>` before overwriting, so re-runs no longer destroy an existing configuration; `install.sh` does the same.
+
+### Security
+- Hardened installer `.env` writing against injection: keys are allowlisted against the shared env schema and values containing newlines are rejected.
+
 ## [0.55.18] - 2026-06-02
 
 ### Changed
