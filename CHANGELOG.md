@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.60.6] - 2026-06-03
+
+### Added
+- Add Dutch (nl) as the 17th supported language (#231). Dutch-speaking families can now use Oikos fully translated, including the web installer wizard and CLI installer.
+
 ## [0.60.5] - 2026-06-03
 
 ### Fixed
