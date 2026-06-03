@@ -48,13 +48,13 @@ dedicated `podman-compose.yml` (SELinux `:Z` labels).
 
 ## Localization
 
-The wizard is fully localized into all 17 languages supported by the app and
+The wizard is fully localized into all 18 languages supported by the app and
 detects the browser language automatically (`de` is the reference locale, `en`
 the fallback). Translations live in `tools/installer/locales/*.json` and are
 loaded by `i18n-mini.js`, which mirrors the app's locale resolution.
 
 The **CLI installer** (`install.sh` at the repo root) is localized into the same
-17 languages. It detects the language from the shell environment
+18 languages. It detects the language from the shell environment
 (`OIKOS_INSTALLER_LANG` > `LC_ALL` > `LC_MESSAGES` > `LANG`) and accepts a
 `--lang <code>` override. Its strings live in `tools/installer/locales/cli/<lang>.sh`
 — one sourced shell file per language that sets `MSG_*` variables; `en.sh` is the
