@@ -13,7 +13,8 @@ process.env.DB_PATH = ':memory:';
 const db = (await import('../server/db.js')).get();
 const { __test } = await import('../server/services/google-calendar.js');
 const { localEventToGoogle, googleAllDayEndToInclusive, localAllDayEndToExclusive,
-        upsertGoogleEvents, upsertExternalCalendar, getCalendarId, setCalendarId } = __test;
+        upsertGoogleEvents, upsertExternalCalendar, getCalendarId, setCalendarId,
+        setReadonly, isReadonly } = __test;
 
 let passed = 0;
 let failed = 0;
@@ -324,6 +325,34 @@ test('setCalendarId: Wechsel entfernt bestehende Google-Events', () => {
 
   const after = db.prepare("SELECT COUNT(*) c FROM calendar_events WHERE external_source = 'google'").get().c;
   assertEqual(after, 0, 'Alle Google-Events müssen beim Kalenderwechsel entfernt werden');
+});
+
+// --------------------------------------------------------
+// setReadonly / isReadonly / getStatus (Issue #236)
+// --------------------------------------------------------
+console.log('\n[Google Calendar Test] Read-only-Flag (Issue #236)\n');
+
+// Hilfsfunktion cfgGet ist bereits oben definiert.
+
+test('setReadonly true: speichert Flag in sync_config', () => {
+  setReadonly(true);
+  assertEqual(cfgGet('google_readonly'), '1');
+});
+
+test('setReadonly false: löscht Flag aus sync_config', () => {
+  setReadonly(false);
+  assertEqual(cfgGet('google_readonly'), null);
+});
+
+test('isReadonly: false wenn Flag nicht gesetzt', () => {
+  db.prepare("DELETE FROM sync_config WHERE key = 'google_readonly'").run();
+  assert(!isReadonly(), 'isReadonly() muss false sein');
+});
+
+test('isReadonly: true nach setReadonly(true)', () => {
+  setReadonly(true);
+  assert(isReadonly(), 'isReadonly() muss true sein');
+  setReadonly(false); // aufräumen
 });
 
 // --------------------------------------------------------

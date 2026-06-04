@@ -71,6 +71,18 @@ function cfgDel(key) {
   db.get().prepare('DELETE FROM sync_config WHERE key = ?').run(key);
 }
 
+function isReadonly() {
+  return cfgGet('google_readonly') === '1';
+}
+
+function setReadonly(enabled) {
+  if (enabled) {
+    cfgSet('google_readonly', '1');
+  } else {
+    cfgDel('google_readonly');
+  }
+}
+
 // --------------------------------------------------------
 // Kalenderauswahl (Issue #220)
 // --------------------------------------------------------
@@ -213,7 +225,7 @@ function getStatus() {
   const configured = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REDIRECT_URI);
   const connected  = !!(cfgGet('google_access_token') && cfgGet('google_refresh_token'));
   const lastSync   = cfgGet('google_last_sync');
-  return { configured, connected, lastSync, calendarId: getCalendarId() };
+  return { configured, connected, lastSync, calendarId: getCalendarId(), readonly: isReadonly() };
 }
 
 /**
@@ -221,7 +233,7 @@ function getStatus() {
  */
 function disconnect() {
   ['google_access_token', 'google_refresh_token', 'google_token_expiry',
-   'google_sync_token', 'google_last_sync', 'google_calendar_id'].forEach(cfgDel);
+   'google_sync_token', 'google_last_sync', 'google_calendar_id', 'google_readonly'].forEach(cfgDel);
   log.info('Disconnected.');
 }
 
@@ -297,28 +309,33 @@ async function sync() {
   // --------------------------------------------------------
   // Outbound: lokal → Google
   // --------------------------------------------------------
-  const localEvents = db.get().prepare(`
-    SELECT * FROM calendar_events
-    WHERE external_source = 'local' AND external_calendar_id IS NULL
-  `).all();
+  if (isReadonly()) {
+    log.info('Read-only mode – outbound sync skipped.');
+  } else {
+    const localEvents = db.get().prepare(`
+      SELECT * FROM calendar_events
+      WHERE external_source = 'local' AND external_calendar_id IS NULL
+    `).all();
 
-  for (const event of localEvents) {
-    try {
-      const gEvent = localEventToGoogle(event);
-      const created = await calendar.events.insert({
-        calendarId,
-        requestBody: gEvent,
-      });
-      db.get().prepare(`
-        UPDATE calendar_events SET external_calendar_id = ?, external_source = 'google' WHERE id = ?
-      `).run(created.data.id, event.id);
-    } catch (err) {
-      log.error(`Outbound error for event ${event.id}:`, err.message);
+    for (const event of localEvents) {
+      try {
+        const gEvent = localEventToGoogle(event);
+        const created = await calendar.events.insert({
+          calendarId,
+          requestBody: gEvent,
+        });
+        db.get().prepare(`
+          UPDATE calendar_events SET external_calendar_id = ?, external_source = 'google' WHERE id = ?
+        `).run(created.data.id, event.id);
+      } catch (err) {
+        log.error(`Outbound error for event ${event.id}:`, err.message);
+      }
     }
+
+    log.info(`Sync completed - ${localEvents.length} local → Google, inbound via syncToken.`);
   }
 
   cfgSet('google_last_sync', new Date().toISOString());
-  log.info(`Sync completed - ${localEvents.length} local → Google, inbound via syncToken.`);
 }
 
 // Google Calendar uses exclusive end dates for all-day events (RFC 5545).
@@ -455,5 +472,5 @@ function localEventToGoogle(event) {
   return gEvent;
 }
 
-export { getAuthUrl, handleCallback, getStatus, disconnect, sync, listCalendars, getCalendarId, setCalendarId };
-export const __test = { localEventToGoogle, googleAllDayEndToInclusive, localAllDayEndToExclusive, upsertGoogleEvents, upsertExternalCalendar, getCalendarId, setCalendarId };
+export { getAuthUrl, handleCallback, getStatus, disconnect, sync, listCalendars, getCalendarId, setCalendarId, setReadonly };
+export const __test = { localEventToGoogle, googleAllDayEndToInclusive, localAllDayEndToExclusive, upsertGoogleEvents, upsertExternalCalendar, getCalendarId, setCalendarId, setReadonly, isReadonly };
