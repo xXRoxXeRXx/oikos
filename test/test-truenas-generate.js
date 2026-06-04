@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { assertValidSemver, bumpVersion, substitute } from '../tools/truenas/generate.mjs';
-import { runGenerate } from '../tools/truenas/generate.mjs';
+import { assertValidSemver, bumpVersion, substitute, runGenerate } from '../tools/truenas/generate.mjs';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -110,5 +109,14 @@ test('runGenerate wirft bei ungültiger pkgVersion', () => {
   assert.throws(
     () => runGenerate({ sourceDir, outDir, pkgVersion: 'nightly', bump: 'patch' }),
     /ungültige semver/i,
+  );
+});
+
+test('runGenerate wirft bei fehlender version in catalog-version.json', () => {
+  const { sourceDir, outDir } = makeFixture();
+  writeFileSync(join(sourceDir, 'catalog-version.json'), JSON.stringify({}) + '\n');
+  assert.throws(
+    () => runGenerate({ sourceDir, outDir, pkgVersion: '0.61.0', bump: 'patch' }),
+    /catalog-version\.json/,
   );
 });

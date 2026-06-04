@@ -54,6 +54,9 @@ export function runGenerate({ sourceDir, outDir, pkgVersion, bump }) {
 
   const cvPath = join(sourceDir, 'catalog-version.json');
   const current = JSON.parse(readFileSync(cvPath, 'utf8')).version;
+  if (typeof current !== 'string' || !SEMVER_RE.test(current)) {
+    throw new Error(`catalog-version.json enthält keine gültige version: ${JSON.stringify(current)}`);
+  }
   const catalogVersion = bumpVersion(current, bump);
 
   const written = [];
