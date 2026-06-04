@@ -1925,8 +1925,9 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
       googleReadonlyCb.disabled = true;
       try {
         await api.put('/calendar/google/readonly', { readonly: enabled });
-      } catch {
+      } catch (err) {
         googleReadonlyCb.checked = !enabled;
+        window.oikos?.showToast(err?.message ?? t('common.errorGeneric'), 'danger');
       } finally {
         googleReadonlyCb.disabled = false;
       }
