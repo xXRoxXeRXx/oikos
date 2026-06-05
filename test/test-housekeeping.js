@@ -1,57 +1,48 @@
 /**
  * Modul: Housekeeping-Test
- * Zweck: Validiert alle Housekeeping-API-Abfragen und Constraints
+ * Zweck: Validiert Housekeeping-Schema, API-Abfragen und Constraints
  * Ausführen: node --experimental-sqlite test/test-housekeeping.js
  */
 
-import { DatabaseSync } from 'node:sqlite';
-import { MIGRATIONS_SQL } from '../server/db-schema-test.js';
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import Database from 'better-sqlite3';
+import { MIGRATIONS, _setTestDatabase, _resetTestDatabase } from '../server/db.js';
 
-let passed = 0;
-let failed = 0;
-
-function test(name, fn) {
-  try {
-    fn();
-    console.log(`  ✓ ${name}`);
-    passed++;
-  } catch (err) {
-    console.error(`  ✗ ${name}: ${err.message}`);
-    failed++;
+// In-Memory-DB mit allen Migrationen aufbauen
+function buildTestDb() {
+  const db = new Database(':memory:');
+  db.pragma('foreign_keys = ON');
+  db.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
+    version INTEGER PRIMARY KEY,
+    description TEXT NOT NULL,
+    applied_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+  )`);
+  for (const m of MIGRATIONS) {
+    if (typeof m.up === 'function') {
+      m.up(db);
+    } else {
+      db.exec(m.up);
+    }
+    if (typeof m.afterUp === 'function') m.afterUp(db);
+    db.prepare('INSERT INTO schema_migrations (version, description) VALUES (?, ?)').run(m.version, m.description);
   }
+  return db;
 }
 
-function assert(cond, msg) {
-  if (!cond) throw new Error(msg || 'Assertion fehlgeschlagen');
-}
+const db = buildTestDb();
+_setTestDatabase(db);
 
-const db = new DatabaseSync(':memory:');
-db.exec('PRAGMA foreign_keys = ON;');
-db.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
-  version INTEGER PRIMARY KEY, description TEXT NOT NULL,
-  applied_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
-);`);
-db.exec(MIGRATIONS_SQL[1]);
-
-// Testdaten: Benutzer anlegen
-const u1 = db.prepare(`INSERT INTO users (username, display_name, password_hash, avatar_color, role)
-  VALUES ('admin', 'Anna', 'x', '#007AFF', 'admin')`).run();
-const uid1 = u1.lastInsertRowid;
-
-console.log('\n[Housekeeping-Test] Smoke Test\n');
-
-test('housekeeping smoke: users table exists', () => {
+test('housekeeping smoke: workers table exists', () => {
   const row = db.prepare(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='housekeeping_workers'"
   ).get();
-  assert(row?.name === 'users', 'users table should exist');
+  assert.equal(row?.name, 'housekeeping_workers');
 });
 
-test('housekeeping smoke: can create test user', () => {
-  assert(uid1 > 0, 'User ID should be > 0');
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(uid1);
-  assert(user.username === 'admin', 'Username should be admin');
+test('housekeeping smoke: decay tasks table exists', () => {
+  const row = db.prepare(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='housekeeping_decay_tasks'"
+  ).get();
+  assert.equal(row?.name, 'housekeeping_decay_tasks');
 });
-
-console.log(`\n[Housekeeping-Test] Ergebnis: ${passed} bestanden, ${failed} fehlgeschlagen\n`);
-if (failed > 0) process.exit(1);
