@@ -1475,6 +1475,13 @@
     "everyDays": "Elke {{days}} dagen",
     "completeTask": "{{name}} voltooien",
     "taskDoneToast": "Taak voltooid.",
+    "editTask": "Taak bewerken",
+    "deleteTask": "Taak verwijderen",
+    "undoTask": "Voltooiing ongedaan maken",
+    "taskUpdatedToast": "Taak bijgewerkt",
+    "taskDeletedToast": "Taak verwijderd",
+    "taskUndoneToast": "Voltooiing gereset",
+    "deleteTaskConfirm": "Taak \"{name}\" echt verwijderen?",
     "reportTitle": "Probleem melden",
     "problemDescription": "Probleembeschrijving",
     "problemPlaceholder": "Voorbeeld: doorgebrande gloeilamp",
@@ -1500,6 +1507,7 @@
     "pendingPayments": "Openstaande betalingen",
     "monthlyPayments": "Maandelijkse betalingen",
     "noPaymentData": "Nog geen betalingsgegevens.",
+    "recentVisits": "Recente bezoeken",
     "noVisits": "Nog geen bezoeken",
     "noWorkerTitle": "Geen schoonmakerprofiel",
     "noWorkerHint": "Maak het medewerkersprofiel aan om contactgegevens, tarief en betalingsschema vast te leggen.",
@@ -1593,6 +1601,13 @@
         "area": "Buiten"
       }
     },
+    "rateType": "Facturatietype",
+    "rateDaily": "Dagtarief",
+    "rateHourly": "Uurtarief",
+    "hourlyRate": "Uurtarief",
+    "minutesWorked": "Gewerkte minuten",
+    "hoursWorked": "Gewerkte uren",
+    "computedAmount": "Berekend bedrag",
     "setupProfileAction": "Profiel aanmaken"
   },
   "userMultiSelect": {

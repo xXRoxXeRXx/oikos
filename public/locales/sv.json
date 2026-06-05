@@ -1475,6 +1475,13 @@
     "everyDays": "Var {{days}} dag",
     "completeTask": "Slutför {{name}}",
     "taskDoneToast": "Uppgift slutförd.",
+    "editTask": "Redigera uppgift",
+    "deleteTask": "Ta bort uppgift",
+    "undoTask": "Ångra slutförande",
+    "taskUpdatedToast": "Uppgift uppdaterad",
+    "taskDeletedToast": "Uppgift borttagen",
+    "taskUndoneToast": "Slutförande återställt",
+    "deleteTaskConfirm": "Ta bort uppgiften \"{name}\"?",
     "reportTitle": "Rapportera problem",
     "problemDescription": "Problembeskrivning",
     "problemPlaceholder": "Exempel: trasig lampa",
@@ -1500,6 +1507,7 @@
     "pendingPayments": "Väntande betalningar",
     "monthlyPayments": "Månadsbetalningar",
     "noPaymentData": "Inga betalningsdata ännu.",
+    "recentVisits": "Senaste besök",
     "noVisits": "Inga besök ännu",
     "noWorkerTitle": "Ingen städprofil",
     "noWorkerHint": "Skapa profilen för kontakt, dagspris och betalningsschema.",
@@ -1593,6 +1601,13 @@
         "area": "Utomhus"
       }
     },
+    "rateType": "Faktureringstyp",
+    "rateDaily": "Dagsarvode",
+    "rateHourly": "Timtaxa",
+    "hourlyRate": "Timtaxa",
+    "minutesWorked": "Arbetade minuter",
+    "hoursWorked": "Arbetade timmar",
+    "computedAmount": "Beräknat belopp",
     "setupProfileAction": "Skapa profil"
   },
   "userMultiSelect": {

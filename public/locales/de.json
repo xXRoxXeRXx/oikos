@@ -1479,6 +1479,13 @@
     "everyDays": "Alle {{days}} Tage",
     "completeTask": "{{name}} erledigen",
     "taskDoneToast": "Aufgabe erledigt.",
+    "editTask": "Aufgabe bearbeiten",
+    "deleteTask": "Aufgabe löschen",
+    "undoTask": "Erledigt rückgängig",
+    "taskUpdatedToast": "Aufgabe aktualisiert",
+    "taskDeletedToast": "Aufgabe gelöscht",
+    "taskUndoneToast": "Erledigung zurückgesetzt",
+    "deleteTaskConfirm": "Aufgabe \"{name}\" wirklich löschen?",
     "reportTitle": "Problem melden",
     "problemDescription": "Problembeschreibung",
     "problemPlaceholder": "Beispiel: Glühbirne defekt",
@@ -1504,6 +1511,7 @@
     "pendingPayments": "Offene Zahlungen",
     "monthlyPayments": "Monatliche Zahlungen",
     "noPaymentData": "Noch keine Zahlungsdaten.",
+    "recentVisits": "Letzte Besuche",
     "noVisits": "Noch keine Besuche",
     "noWorkerTitle": "Kein Hauspflege-Profil",
     "noWorkerHint": "Profil anlegen, um Kontakte, Tagessatz und Zahlungsrhythmus festzulegen.",
@@ -1597,6 +1605,13 @@
         "area": "Außenbereich"
       }
     },
+    "rateType": "Abrechnungsart",
+    "rateDaily": "Tagessatz",
+    "rateHourly": "Stundensatz",
+    "hourlyRate": "Stundensatz",
+    "minutesWorked": "Arbeitszeit (Min.)",
+    "hoursWorked": "Arbeitszeit",
+    "computedAmount": "Berechneter Betrag",
     "setupProfileAction": "Profil anlegen"
   },
   "splitExpenses": {

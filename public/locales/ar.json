@@ -1475,6 +1475,13 @@
     "everyDays": "Every {{days}} days",
     "completeTask": "Complete {{name}}",
     "taskDoneToast": "Task completed.",
+    "editTask": "تعديل المهمة",
+    "deleteTask": "حذف المهمة",
+    "undoTask": "التراجع عن الإنجاز",
+    "taskUpdatedToast": "تم تحديث المهمة",
+    "taskDeletedToast": "تم حذف المهمة",
+    "taskUndoneToast": "تمت إعادة تعيين الإنجاز",
+    "deleteTaskConfirm": "هل تريد حقاً حذف المهمة \"{name}\"؟",
     "reportTitle": "Report a problem",
     "problemDescription": "Problem description",
     "problemPlaceholder": "Example: burnt-out light bulb",
@@ -1500,6 +1507,7 @@
     "pendingPayments": "Pending payments",
     "monthlyPayments": "Monthly payments",
     "noPaymentData": "No payment data yet.",
+    "recentVisits": "الزيارات الأخيرة",
     "noVisits": "No visits yet",
     "noWorkerTitle": "No housekeeper profile",
     "noWorkerHint": "Create the worker profile to define contacts, rate, and payment schedule.",
@@ -1593,6 +1601,13 @@
         "area": "الخارج"
       }
     },
+    "rateType": "نوع الفوترة",
+    "rateDaily": "الأجر اليومي",
+    "rateHourly": "الأجر بالساعة",
+    "hourlyRate": "الأجر بالساعة",
+    "minutesWorked": "دقائق العمل",
+    "hoursWorked": "ساعات العمل",
+    "computedAmount": "المبلغ المحسوب",
     "setupProfileAction": "إنشاء ملف شخصي"
   },
   "userMultiSelect": {

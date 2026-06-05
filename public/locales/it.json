@@ -1475,6 +1475,13 @@
     "everyDays": "Ogni {{days}} giorni",
     "completeTask": "Completa {{name}}",
     "taskDoneToast": "Attività completata.",
+    "editTask": "Modifica attività",
+    "deleteTask": "Elimina attività",
+    "undoTask": "Annulla completamento",
+    "taskUpdatedToast": "Attività aggiornata",
+    "taskDeletedToast": "Attività eliminata",
+    "taskUndoneToast": "Completamento annullato",
+    "deleteTaskConfirm": "Eliminare l'attività \"{name}\"?",
     "reportTitle": "Segnala problema",
     "problemDescription": "Descrizione del problema",
     "problemPlaceholder": "Esempio: lampadina bruciata",
@@ -1500,6 +1507,7 @@
     "pendingPayments": "Pagamenti in sospeso",
     "monthlyPayments": "Pagamenti mensili",
     "noPaymentData": "Nessun dato di pagamento.",
+    "recentVisits": "Ultime visite",
     "noVisits": "Nessuna visita",
     "noWorkerTitle": "Nessun profilo pulizie",
     "noWorkerHint": "Crea il profilo per definire contatti, tariffa e calendario pagamenti.",
@@ -1593,6 +1601,13 @@
         "area": "Esterno"
       }
     },
+    "rateType": "Tipo di fatturazione",
+    "rateDaily": "Tariffa giornaliera",
+    "rateHourly": "Tariffa oraria",
+    "hourlyRate": "Tariffa oraria",
+    "minutesWorked": "Minuti lavorati",
+    "hoursWorked": "Ore lavorate",
+    "computedAmount": "Importo calcolato",
     "setupProfileAction": "Crea profilo"
   },
   "userMultiSelect": {

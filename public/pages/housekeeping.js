@@ -188,11 +188,11 @@ async function toggleSession(container, workerId) {
     } else {
       await api.post('/housekeeping/work-sessions/check-in', {
         worker_id: worker.id,
-        daily_rate: worker.daily_rate || 0,
+        daily_rate: worker.rate_type === 'hourly' ? 0 : (worker.daily_rate || 0),
         extras: 0,
         local_date: localDate(),
         timezone_offset_minutes: new Date().getTimezoneOffset(),
-        ...visitTextPayload(worker, localDate(), worker.daily_rate || 0, 0),
+        ...visitTextPayload(worker, localDate(), worker.rate_type === 'hourly' ? 0 : (worker.daily_rate || 0), 0),
       });
       window.oikos?.showToast(t('housekeeping.checkedInToast'), 'success');
     }
@@ -229,7 +229,7 @@ function renderWorkerSummary() {
       </div>
       <div>
         <strong>${esc(worker.display_name)}</strong>
-        <span>${esc(checkedIn ? `${t('housekeeping.visitRecordedAt')} ${formatTime(session.check_in)}` : `${money(worker.daily_rate)} · ${scheduleLabel(worker.payment_schedule)}`)}</span>
+        <span>${esc(checkedIn ? `${t('housekeeping.visitRecordedAt')} ${formatTime(session.check_in)}` : (worker.rate_type === 'hourly' ? `${money(worker.hourly_rate)}/${t('housekeeping.rateHourly')}` : `${money(worker.daily_rate)} · ${scheduleLabel(worker.payment_schedule)}`))}</span>
       </div>
       <button class="btn ${checkedIn ? 'btn--secondary' : 'btn--primary'} housekeeping-check-small" type="button"
               data-worker-check="${worker.id}" ${checkedIn ? 'disabled' : ''}>
@@ -268,6 +268,23 @@ function renderDashboard(content) {
     `;
   }).join('');
 
+  const recentVisits = (state.reports || []).slice(0, 5);
+  const recentRows = recentVisits.map((visit) => `
+    <article class="housekeeping-staff-log-row">
+      <div>
+        <strong>${esc(formatDate(visit.check_in))}</strong>
+        <span>${esc(visit.worker_name || t('housekeeping.staff'))} · ${esc(money(visit.total_amount))} · ${esc(visit.paid_at ? t('housekeeping.paymentPaid') : t('housekeeping.paymentPending'))}</span>
+      </div>
+      <div class="housekeeping-staff-log-row__actions">
+        <button class="btn btn--secondary housekeeping-log-action" type="button" data-edit-visit="${esc(visit.id)}"
+                aria-label="${esc(t('housekeeping.editVisit'))}">
+          <i data-lucide="edit-2" aria-hidden="true"></i>
+          <span>${esc(t('housekeeping.editVisit'))}</span>
+        </button>
+      </div>
+    </article>
+  `).join('');
+
   content.insertAdjacentHTML('beforeend', `
     ${renderWorkerSummary()}
     <section class="housekeeping-metrics">
@@ -297,9 +314,24 @@ function renderDashboard(content) {
         ${bars || `<p class="housekeeping-muted">${esc(t('housekeeping.noPaymentData'))}</p>`}
       </div>
     </section>
+    <section class="housekeeping-card">
+      <div class="housekeeping-section-heading">
+        <h2>${esc(t('housekeeping.recentVisits'))}</h2>
+      </div>
+      <div class="housekeeping-staff-log-list">
+        ${recentRows || `<p class="housekeeping-muted">${esc(t('housekeeping.noVisits'))}</p>`}
+      </div>
+    </section>
   `);
+  if (window.lucide) window.lucide.createIcons({ el: content });
   content.querySelectorAll('[data-worker-check]').forEach((btn) => {
     btn.addEventListener('click', () => toggleSession(document.querySelector('.page-transition') || document.body, btn.dataset.workerCheck));
+  });
+  content.querySelectorAll('[data-edit-visit]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const visit = (state.reports || []).find((v) => String(v.id) === btn.dataset.editVisit);
+      if (visit) openVisitEditModal(visit, content, { onDone: renderDashboard });
+    });
   });
 }
 
@@ -324,7 +356,7 @@ function renderTasks(content) {
   `).join('');
   const taskRows = state.tasks.map((task) => `
     <article class="housekeeping-task housekeeping-task--${esc(task.urgency_status)}">
-      <button class="housekeeping-task__check" type="button" data-complete-task="${task.id}"
+      <button class="housekeeping-task__check" type="button" data-complete-task="${esc(task.id)}"
               aria-label="${esc(t('housekeeping.completeTask', { name: task.name }))}">
         <i data-lucide="check" aria-hidden="true"></i>
       </button>
@@ -332,6 +364,21 @@ function renderTasks(content) {
         <h2>${esc(task.name)}</h2>
         <p>${esc(task.area)} · ${esc(t('housekeeping.everyDays', { days: task.frequency_days }))}</p>
         <span>${esc(urgencyLabel(task.urgency_status))}</span>
+      </div>
+      <div class="housekeeping-task__actions">
+        ${task.last_completed ? `
+          <button class="btn btn--secondary btn--icon" type="button" data-undo-task="${esc(task.id)}"
+                  aria-label="${esc(t('housekeeping.undoTask'))}">
+            <i data-lucide="rotate-ccw" aria-hidden="true"></i>
+          </button>` : ''}
+        <button class="btn btn--secondary btn--icon" type="button" data-edit-task="${esc(task.id)}"
+                aria-label="${esc(t('housekeeping.editTask'))}">
+          <i data-lucide="edit-2" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn--danger-outline btn--icon" type="button" data-delete-task="${esc(task.id)}"
+                aria-label="${esc(t('housekeeping.deleteTask'))}">
+          <i data-lucide="trash-2" aria-hidden="true"></i>
+        </button>
       </div>
     </article>
   `).join('');
@@ -408,6 +455,42 @@ function renderTasks(content) {
       } catch (err) {
         window.oikos?.showToast(err.message, 'danger');
       }
+    });
+  });
+
+  content.querySelectorAll('[data-undo-task]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      try {
+        await api.patch(`/housekeeping/decay-tasks/${btn.dataset.undoTask}`, { last_completed: null });
+        window.oikos?.showToast(t('housekeeping.taskUndoneToast'), 'success');
+        await loadData();
+        renderTasks(content);
+      } catch (err) {
+        window.oikos?.showToast(err.message, 'danger');
+      }
+    });
+  });
+
+  content.querySelectorAll('[data-delete-task]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const task = state.tasks.find((it) => String(it.id) === btn.dataset.deleteTask);
+      if (!task) return;
+      if (!window.confirm(t('housekeeping.deleteTaskConfirm', { name: task.name }))) return;
+      try {
+        await api.delete(`/housekeeping/decay-tasks/${task.id}`);
+        window.oikos?.showToast(t('housekeeping.taskDeletedToast'), 'success');
+        await loadData();
+        renderTasks(content);
+      } catch (err) {
+        window.oikos?.showToast(err.message, 'danger');
+      }
+    });
+  });
+
+  content.querySelectorAll('[data-edit-task]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const task = state.tasks.find((it) => String(it.id) === btn.dataset.editTask);
+      if (task) openTaskEditModal(task, content);
     });
   });
 }
@@ -658,7 +741,55 @@ function renderStaffVisitLog() {
   `;
 }
 
-function openVisitEditModal(visit, content) {
+function openTaskEditModal(task, content) {
+  openModal({
+    title: t('housekeeping.editTask'),
+    size: 'md',
+    content: `
+      <form id="housekeeping-task-edit-form" class="housekeeping-worker-form">
+        <label class="housekeeping-field">
+          <span>${esc(t('housekeeping.taskName'))}</span>
+          <input name="name" required maxlength="200" value="${esc(task.name)}">
+        </label>
+        <label class="housekeeping-field">
+          <span>${esc(t('housekeeping.taskArea'))}</span>
+          <input name="area" required maxlength="100" value="${esc(task.area)}">
+        </label>
+        <label class="housekeeping-field">
+          <span>${esc(t('housekeeping.taskFrequency'))}</span>
+          <input name="frequency_days" required inputmode="numeric" type="number" min="1" step="1" value="${esc(task.frequency_days)}">
+        </label>
+        <button class="btn btn--primary housekeeping-form-submit" type="submit">
+          <i data-lucide="save" aria-hidden="true"></i>
+          <span>${esc(t('common.save'))}</span>
+        </button>
+      </form>
+    `,
+    onSave: (panel) => {
+      panel.querySelector('#housekeeping-task-edit-form')?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const fields = event.currentTarget.elements;
+        const frequencyDays = Number(fields.frequency_days.value);
+        if (!fields.name.value.trim() || !fields.area.value.trim() || !Number.isInteger(frequencyDays) || frequencyDays < 1) return;
+        try {
+          await api.patch(`/housekeeping/decay-tasks/${task.id}`, {
+            name: fields.name.value.trim(),
+            area: fields.area.value.trim(),
+            frequency_days: frequencyDays,
+          });
+          window.oikos?.showToast(t('housekeeping.taskUpdatedToast'), 'success');
+          await loadData();
+          closeModal({ force: true });
+          renderTasks(content);
+        } catch (err) {
+          window.oikos?.showToast(err.message, 'danger');
+        }
+      });
+    },
+  });
+}
+
+function openVisitEditModal(visit, content, { onDone } = {}) {
   const worker = state.workers.find((item) => String(item.id) === String(visit.worker_id)) || null;
   openModal({
     title: t('housekeeping.editVisit'),
@@ -670,10 +801,21 @@ function openVisitEditModal(visit, content) {
           <input name="date" type="date" required value="${esc(visit.check_in.slice(0, 10))}">
         </label>
         <div class="housekeeping-form-grid">
-          <label class="housekeeping-field">
-            <span>${esc(t('housekeeping.dailyRate'))}</span>
-            <input name="daily_rate" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(visit.daily_rate ?? 0)}">
-          </label>
+          ${visit.rate_type === 'hourly' ? `
+            <label class="housekeeping-field">
+              <span>${esc(t('housekeeping.minutesWorked'))}</span>
+              <input name="minutes_worked" type="number" min="0" step="1" inputmode="numeric" id="hk-visit-minutes" value="${esc(visit.minutes_worked ?? 0)}">
+            </label>
+            <label class="housekeeping-field">
+              <span>${esc(t('housekeeping.computedAmount'))}</span>
+              <output id="hk-visit-computed">${esc(money(visit.daily_rate ?? 0))}</output>
+            </label>
+          ` : `
+            <label class="housekeeping-field">
+              <span>${esc(t('housekeeping.dailyRate'))}</span>
+              <input name="daily_rate" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(visit.daily_rate ?? 0)}">
+            </label>
+          `}
           <label class="housekeeping-field">
             <span>${esc(t('housekeeping.extras'))}</span>
             <input name="extras" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(visit.extras ?? 0)}">
@@ -702,7 +844,12 @@ function openVisitEditModal(visit, content) {
         const form = event.currentTarget;
         const fields = form.elements;
         const dateValue = fields.date.value;
-        const dailyRate = Number(fields.daily_rate.value || 0);
+        const minutesWorked = visit.rate_type === 'hourly'
+          ? Number(fields.minutes_worked?.value || 0)
+          : null;
+        const dailyRate = visit.rate_type === 'hourly'
+          ? null
+          : Number(fields.daily_rate.value || 0);
         const extras = Number(fields.extras.value || 0);
         let receiptDocumentId = visit.receipt_document_id || null;
         try {
@@ -730,17 +877,19 @@ function openVisitEditModal(visit, content) {
           }
           await api.put(`/housekeeping/visits/${visit.id}`, {
             date: dateValue,
-            daily_rate: dailyRate,
+            ...(visit.rate_type === 'hourly'
+              ? { minutes_worked: minutesWorked }
+              : { daily_rate: dailyRate }),
             extras,
             receipt_document_id: receiptDocumentId,
-            ...visitTextPayload(worker, dateValue, dailyRate, extras),
+            ...visitTextPayload(worker, dateValue, dailyRate ?? visit.daily_rate, extras),
           });
           window.oikos?.showToast(t('housekeeping.visitSavedToast'), 'success');
           await loadData();
           state.staffLogMonth = dateValue.slice(0, 7);
           await loadStaffVisits();
           closeModal({ force: true });
-          renderStaff(content);
+          (onDone || renderStaff)(content);
         } catch (err) {
           window.oikos?.showToast(err.message, 'danger');
         }
@@ -748,6 +897,20 @@ function openVisitEditModal(visit, content) {
     },
   });
   const panel = document.querySelector('.modal-panel');
+  if (visit.rate_type === 'hourly') {
+    const minutesInput = panel?.querySelector('#hk-visit-minutes');
+    const computedOutput = panel?.querySelector('#hk-visit-computed');
+    function updateComputed() {
+      if (!minutesInput || !computedOutput) return;
+      const mins = Math.max(0, Number(minutesInput.value) || 0);
+      const rounded = Math.round(mins / 15) * 15;
+      const amount = (rounded / 60) * (Number(visit.hourly_rate) || 0);
+      const fmt = new Intl.NumberFormat(getLocale(), { style: 'currency', currency: state.currency || 'EUR' });
+      computedOutput.textContent = fmt.format(amount);
+    }
+    minutesInput?.addEventListener('input', updateComputed);
+    updateComputed();
+  }
   const receiptInput = panel?.querySelector('#housekeeping-receipt-file');
   const receiptSelected = panel?.querySelector('#housekeeping-receipt-selected');
   receiptInput?.addEventListener('change', () => {
@@ -801,8 +964,19 @@ function openStaffModal(worker, content, options = {}) {
             <input name="birth_date" type="date" value="${esc(item.birth_date || '')}">
           </label>
           <label class="housekeeping-field">
+            <span>${esc(t('housekeeping.rateType'))}</span>
+            <select name="rate_type">
+              <option value="daily"${(!item.rate_type || item.rate_type === 'daily') ? ' selected' : ''}>${esc(t('housekeeping.rateDaily'))}</option>
+              <option value="hourly"${item.rate_type === 'hourly' ? ' selected' : ''}>${esc(t('housekeeping.rateHourly'))}</option>
+            </select>
+          </label>
+          <label class="housekeeping-field" id="housekeeping-field-daily-rate">
             <span>${esc(t('housekeeping.dailyRate'))}</span>
             <input name="daily_rate" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(item.daily_rate ?? 0)}">
+          </label>
+          <label class="housekeeping-field" id="housekeeping-field-hourly-rate"${(!item.rate_type || item.rate_type === 'daily') ? ' hidden' : ''}>
+            <span>${esc(t('housekeeping.hourlyRate'))}</span>
+            <input name="hourly_rate" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(item.hourly_rate ?? 0)}">
           </label>
           <label class="housekeeping-field housekeeping-field--color">
             <span>${esc(t('housekeeping.calendarColor'))}</span>
@@ -845,6 +1019,8 @@ function openStaffModal(worker, content, options = {}) {
             email: fields.email.value.trim() || null,
             birth_date: fields.birth_date.value || null,
             daily_rate: Number(fields.daily_rate.value || 0),
+            rate_type: fields.rate_type.value,
+            hourly_rate: Number(fields.hourly_rate?.value || 0),
             payment_schedule: fields.payment_schedule.value,
             calendar_color: fields.calendar_color.value,
             avatar_color: fields.avatar_color.value,
@@ -864,6 +1040,18 @@ function openStaffModal(worker, content, options = {}) {
   });
 
   const panel = document.querySelector('.modal-panel');
+
+  // Wire rate_type toggle to show/hide daily/hourly rate fields
+  const rateTypeSelect = panel?.querySelector('[name="rate_type"]');
+  const dailyRateField = panel?.querySelector('#housekeeping-field-daily-rate');
+  const hourlyRateField = panel?.querySelector('#housekeeping-field-hourly-rate');
+  function updateRateFields() {
+    const isHourly = rateTypeSelect?.value === 'hourly';
+    if (dailyRateField) dailyRateField.hidden = isHourly;
+    if (hourlyRateField) hourlyRateField.hidden = !isHourly;
+  }
+  rateTypeSelect?.addEventListener('change', updateRateFields);
+
   const avatarFile = panel?.querySelector('#housekeeping-avatar-file');
   const avatarButton = panel?.querySelector('#housekeeping-avatar-btn');
   avatarButton?.addEventListener('click', () => avatarFile?.click());
@@ -891,6 +1079,19 @@ export async function render(container) {
   try {
     await loadData();
     renderShell(container);
+    const editVisitId = new URLSearchParams(window.location.search).get('editVisit');
+    if (editVisitId) {
+      try {
+        const res = await api.get(`/housekeeping/visits/${editVisitId}`);
+        const visit = res.data;
+        if (visit) {
+          const content = container.querySelector('#housekeeping-content') || container;
+          openVisitEditModal(visit, content);
+        }
+      } catch {
+        // visit not found or unauthorized — silently ignore
+      }
+    }
   } catch (err) {
     container.replaceChildren();
     container.insertAdjacentHTML('beforeend', `

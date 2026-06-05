@@ -11,6 +11,7 @@ import { createLogger } from '../logger.js';
 import * as db from '../db.js';
 import { normalizeAvatarData, syncFamilyMemberArtifacts } from '../auth.js';
 import { collectErrors, color, date, datetime, month, num, oneOf, str, id as validateId, MAX_SHORT, MAX_TEXT, MAX_TITLE } from '../middleware/validate.js';
+import { minutesBetween, computeHourlyAmount } from '../services/housekeeping-billing.js';
 
 const log = createLogger('Housekeeping');
 const router = express.Router();
@@ -91,6 +92,9 @@ function publicSession(row) {
     paid_at: row.paid_at ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at,
+    rate_type: row.rate_type || 'daily',
+    hourly_rate: Number(row.hourly_rate || 0),
+    minutes_worked: row.minutes_worked ?? null,
   };
 }
 
@@ -108,6 +112,8 @@ function publicWorker(row, context = localDayContext()) {
     email: row.email ?? null,
     birth_date: row.birth_date ?? null,
     daily_rate: Number(row.daily_rate || 0),
+    rate_type: row.rate_type || 'daily',
+    hourly_rate: Number(row.hourly_rate || 0),
     payment_schedule: row.payment_schedule,
     calendar_color: row.calendar_color || DEFAULT_CALENDAR_COLOR,
     current_session: publicSession(todaySession),
@@ -509,13 +515,18 @@ router.post('/worker', async (req, res) => {
     const vSchedule = oneOf(req.body.payment_schedule || 'monthly', PAYMENT_SCHEDULES, 'payment_schedule');
     const vCalendarColor = color(req.body.calendar_color || DEFAULT_CALENDAR_COLOR, 'calendar_color');
     const vNotes = str(req.body.notes, 'notes', { max: MAX_TEXT, required: false });
-    const errors = collectErrors([vDisplayName, vUsername, vPhone, vEmail, vBirthDate, vDailyRate, vSchedule, vCalendarColor, vNotes]);
+    const vRateType = oneOf(req.body.rate_type || 'daily', ['daily', 'hourly'], 'rate_type');
+    const vHourlyRate = num(req.body.hourly_rate, 'hourly_rate');
+    const errors = collectErrors([vDisplayName, vUsername, vPhone, vEmail, vBirthDate, vDailyRate, vSchedule, vCalendarColor, vNotes, vRateType, vHourlyRate]);
     if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
     if (vUsername.value && !/^[a-zA-Z0-9._-]{3,64}$/.test(vUsername.value)) {
       return res.status(400).json({ error: 'Username must be 3-64 characters long and may only contain letters, numbers, dots, hyphens, and underscores.', code: 400 });
     }
     if (vDailyRate.value < 0) {
       return res.status(400).json({ error: 'daily_rate must be greater than or equal to zero.', code: 400 });
+    }
+    if ((vHourlyRate.value ?? 0) < 0) {
+      return res.status(400).json({ error: 'hourly_rate must be greater than or equal to zero.', code: 400 });
     }
     const avatarColor = String(req.body.avatar_color || '#7C3AED').trim();
     const avatarData = req.body.avatar_data !== undefined
@@ -547,14 +558,16 @@ router.post('/worker', async (req, res) => {
         targetUserId,
       );
       db.get().prepare(`
-        INSERT INTO housekeeping_workers (user_id, daily_rate, payment_schedule, calendar_color, notes)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO housekeeping_workers (user_id, daily_rate, payment_schedule, calendar_color, notes, rate_type, hourly_rate)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(user_id) DO UPDATE SET
           daily_rate = excluded.daily_rate,
           payment_schedule = excluded.payment_schedule,
           calendar_color = excluded.calendar_color,
-          notes = excluded.notes
-      `).run(targetUserId, vDailyRate.value, vSchedule.value, vCalendarColor.value, vNotes.value);
+          notes = excluded.notes,
+          rate_type = excluded.rate_type,
+          hourly_rate = excluded.hourly_rate
+      `).run(targetUserId, vDailyRate.value, vSchedule.value, vCalendarColor.value, vNotes.value, vRateType.value, vHourlyRate.value ?? 0);
       syncFamilyMemberArtifacts(db.get(), targetUserId, {
         displayName: vDisplayName.value,
         phone: vPhone.value,
@@ -671,6 +684,8 @@ router.post('/work-sessions/check-in', (req, res) => {
     if (vWorkerId.error) return res.status(400).json({ error: vWorkerId.error, code: 400 });
     const worker = loadWorkerById(vWorkerId.value);
     if (!worker) return res.status(404).json({ error: 'Housekeeper not found.', code: 404 });
+    const workerRateType = worker.rate_type || 'daily';
+    const workerHourlyRate = worker.hourly_rate ?? 0;
     const context = localDayContext(req.body);
     if (loadTodaySession(worker.id, context)) return res.status(409).json({ error: 'A visit is already recorded today for this housekeeper.', code: 409 });
 
@@ -694,14 +709,53 @@ router.post('/work-sessions/check-in', (req, res) => {
         ? createPaymentTask(db.get(), worker, checkIn, totalAmount, actorId, vPaymentTitle.value, vPaymentDescription.value, context.localDate)
         : null;
       return db.get().prepare(`
-        INSERT INTO housekeeping_work_sessions (worker_id, check_in, check_out, daily_rate, extras, calendar_event_id, payment_task_id, created_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(worker.id, checkIn, null, vDailyRate.value, vExtras.value ?? 0, eventId, taskId, actorId);
+        INSERT INTO housekeeping_work_sessions (worker_id, check_in, check_out, daily_rate, extras, calendar_event_id, payment_task_id, created_by, rate_type, hourly_rate)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(worker.id, checkIn, null, vDailyRate.value, vExtras.value ?? 0, eventId, taskId, actorId, workerRateType, workerHourlyRate);
     })();
     const row = db.get().prepare('SELECT * FROM housekeeping_work_sessions WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json({ data: publicSession(row), summary: monthlySummary() });
   } catch (err) {
     log.error('POST /work-sessions/check-in error:', err);
+    res.status(500).json({ error: 'Internal server error.', code: 500 });
+  }
+});
+
+router.get('/visits/:id', (req, res) => {
+  try {
+    const vId = validateId(req.params.id, 'id');
+    if (vId.error) return res.status(400).json({ error: vId.error, code: 400 });
+    const row = db.get().prepare(`
+      SELECT hws.*,
+             hw.payment_schedule,
+             u.display_name AS worker_name,
+             u.avatar_color AS worker_avatar_color,
+             u.avatar_data  AS worker_avatar_data,
+             t.status  AS payment_task_status,
+             t.title   AS payment_task_title,
+             fd.name   AS receipt_document_name
+      FROM housekeeping_work_sessions hws
+      LEFT JOIN housekeeping_workers hw ON hw.id = hws.worker_id
+      LEFT JOIN users u ON u.id = hw.user_id
+      LEFT JOIN tasks t ON t.id = hws.payment_task_id
+      LEFT JOIN family_documents fd ON fd.id = hws.receipt_document_id
+      WHERE hws.id = ?
+    `).get(vId.value);
+    if (!row) return res.status(404).json({ error: 'Visit not found.', code: 404 });
+    const visit = {
+      ...publicSession(row),
+      worker_name: row.worker_name ?? null,
+      worker_avatar_color: row.worker_avatar_color ?? null,
+      worker_avatar_data: row.worker_avatar_data ?? null,
+      payment_schedule: row.payment_schedule ?? 'monthly',
+      payment_task_status: row.payment_task_status ?? null,
+      payment_task_title: row.payment_task_title ?? null,
+      receipt_document_name: row.receipt_document_name ?? null,
+      total_amount: Number(row.daily_rate || 0) + Number(row.extras || 0),
+    };
+    res.json({ data: visit });
+  } catch (err) {
+    log.error('GET /visits/:id error:', err);
     res.status(500).json({ error: 'Internal server error.', code: 500 });
   }
 });
@@ -722,10 +776,19 @@ router.put('/visits/:id', (req, res) => {
     const vReceiptId = req.body.receipt_document_id !== undefined && req.body.receipt_document_id !== null && req.body.receipt_document_id !== ''
       ? validateId(req.body.receipt_document_id, 'receipt_document_id')
       : { value: null, error: null };
+    const vMinutesWorked = existing.rate_type === 'hourly' && req.body.minutes_worked !== undefined
+      ? num(req.body.minutes_worked, 'minutes_worked')
+      : { value: null, error: null };
+    if (vMinutesWorked.error) return res.status(400).json({ error: vMinutesWorked.error, code: 400 });
     const errors = collectErrors([vDate, vDailyRate, vExtras, vEventTitle, vPaymentTitle, vPaymentDescription, vReceiptId]);
     if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
     if (vDailyRate.value < 0 || (vExtras.value ?? 0) < 0) {
       return res.status(400).json({ error: 'Amounts must be greater than or equal to zero.', code: 400 });
+    }
+
+    let effectiveDailyRate = vDailyRate.value;
+    if (existing.rate_type === 'hourly' && vMinutesWorked.value !== null) {
+      effectiveDailyRate = computeHourlyAmount(vMinutesWorked.value, existing.hourly_rate || 0);
     }
 
     const originalTime = existing.check_in?.slice(11) || '09:00:00.000Z';
@@ -734,14 +797,15 @@ router.put('/visits/:id', (req, res) => {
     db.get().transaction(() => {
       db.get().prepare(`
         UPDATE housekeeping_work_sessions
-        SET check_in = ?, check_out = ?, daily_rate = ?, extras = ?, receipt_document_id = ?
+        SET check_in = ?, check_out = ?, daily_rate = ?, extras = ?, receipt_document_id = ?, minutes_worked = ?
         WHERE id = ?
       `).run(
         checkIn,
         checkIn,
-        vDailyRate.value,
+        effectiveDailyRate,
         vExtras.value ?? 0,
         req.body.receipt_document_id !== undefined ? vReceiptId.value : existing.receipt_document_id,
+        vMinutesWorked.value !== null ? vMinutesWorked.value : existing.minutes_worked,
         existing.id,
       );
       updateVisitLinks(
@@ -749,7 +813,7 @@ router.put('/visits/:id', (req, res) => {
         existing,
         worker,
         checkIn,
-        vDailyRate.value,
+        effectiveDailyRate,
         vExtras.value ?? 0,
         vEventTitle.value,
         vPaymentTitle.value,
@@ -816,12 +880,23 @@ router.post('/work-sessions/check-out', (req, res) => {
     }
 
     const checkOut = nowIso();
+    const worker = session.worker_id ? loadWorkerById(session.worker_id) : null;
+    let updateRate = session.daily_rate;
+    let minutesWorked = session.minutes_worked ?? null;
+    let sessionRateType = session.rate_type || 'daily';
+    let sessionHourlyRate = session.hourly_rate ?? 0;
+    if (worker?.rate_type === 'hourly') {
+      sessionRateType = 'hourly';
+      sessionHourlyRate = worker.hourly_rate;
+      minutesWorked = minutesBetween(session.check_in, checkOut);
+      updateRate = computeHourlyAmount(minutesWorked ?? 0, worker.hourly_rate);
+    }
     db.get().transaction(() => {
       db.get().prepare(`
         UPDATE housekeeping_work_sessions
-        SET check_out = ?, extras = ?
+        SET check_out = ?, extras = ?, daily_rate = ?, minutes_worked = ?, rate_type = ?, hourly_rate = ?
         WHERE id = ?
-      `).run(checkOut, vExtras.value ?? session.extras, session.id);
+      `).run(checkOut, vExtras.value ?? session.extras, updateRate, minutesWorked, sessionRateType, sessionHourlyRate, session.id);
     })();
     const row = db.get().prepare('SELECT * FROM housekeeping_work_sessions WHERE id = ?').get(session.id);
     res.json({ data: publicSession(row), summary: monthlySummary(row.check_in.slice(0, 7)) });

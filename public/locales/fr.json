@@ -1475,6 +1475,13 @@
     "everyDays": "Tous les {{days}} jours",
     "completeTask": "Terminer {{name}}",
     "taskDoneToast": "Tâche terminée.",
+    "editTask": "Modifier la tâche",
+    "deleteTask": "Supprimer la tâche",
+    "undoTask": "Annuler la complétion",
+    "taskUpdatedToast": "Tâche mise à jour",
+    "taskDeletedToast": "Tâche supprimée",
+    "taskUndoneToast": "Complétion annulée",
+    "deleteTaskConfirm": "Supprimer la tâche \"{name}\"?",
     "reportTitle": "Signaler un problème",
     "problemDescription": "Description du problème",
     "problemPlaceholder": "Exemple : ampoule grillée",
@@ -1500,6 +1507,7 @@
     "pendingPayments": "Paiements en attente",
     "monthlyPayments": "Paiements mensuels",
     "noPaymentData": "Aucune donnée de paiement.",
+    "recentVisits": "Dernières visites",
     "noVisits": "Aucune visite",
     "noWorkerTitle": "Aucun profil de ménage",
     "noWorkerHint": "Créez le profil pour définir les contacts, le tarif et le rythme de paiement.",
@@ -1593,6 +1601,13 @@
         "area": "Extérieur"
       }
     },
+    "rateType": "Type de facturation",
+    "rateDaily": "Tarif journalier",
+    "rateHourly": "Tarif horaire",
+    "hourlyRate": "Tarif horaire",
+    "minutesWorked": "Minutes travaillées",
+    "hoursWorked": "Heures travaillées",
+    "computedAmount": "Montant calculé",
     "setupProfileAction": "Créer le profil"
   },
   "userMultiSelect": {

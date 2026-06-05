@@ -1475,6 +1475,13 @@
     "everyDays": "A cada {{days}} dias",
     "completeTask": "Concluir {{name}}",
     "taskDoneToast": "Tarefa concluída.",
+    "editTask": "Editar tarefa",
+    "deleteTask": "Excluir tarefa",
+    "undoTask": "Desfazer conclusão",
+    "taskUpdatedToast": "Tarefa atualizada",
+    "taskDeletedToast": "Tarefa excluída",
+    "taskUndoneToast": "Conclusão desfeita",
+    "deleteTaskConfirm": "Excluir a tarefa \"{name}\"?",
     "reportTitle": "Reportar problema",
     "problemDescription": "Descrição do problema",
     "problemPlaceholder": "Ex: lâmpada queimada",
@@ -1500,6 +1507,7 @@
     "pendingPayments": "Pagamentos pendentes",
     "monthlyPayments": "Pagamentos mensais",
     "noPaymentData": "Ainda não há dados de pagamento.",
+    "recentVisits": "Visitas recentes",
     "noVisits": "Nenhuma visita ainda",
     "noWorkerTitle": "Nenhum perfil de faxineira",
     "noWorkerHint": "Crie o perfil para definir contatos, diária e agenda de pagamento.",
@@ -1593,6 +1601,13 @@
         "area": "Área externa"
       }
     },
+    "rateType": "Tipo de cobrança",
+    "rateDaily": "Tarifa diária",
+    "rateHourly": "Tarifa por hora",
+    "hourlyRate": "Tarifa por hora",
+    "minutesWorked": "Minutos trabalhados",
+    "hoursWorked": "Horas trabalhadas",
+    "computedAmount": "Valor calculado",
     "setupProfileAction": "Criar perfil"
   },
   "userMultiSelect": {

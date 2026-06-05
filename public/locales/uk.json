@@ -1475,6 +1475,13 @@
     "everyDays": "Кожні {{days}} днів",
     "completeTask": "Завершити {{name}}",
     "taskDoneToast": "Завдання виконано.",
+    "editTask": "Редагувати завдання",
+    "deleteTask": "Видалити завдання",
+    "undoTask": "Скасувати виконання",
+    "taskUpdatedToast": "Завдання оновлено",
+    "taskDeletedToast": "Завдання видалено",
+    "taskUndoneToast": "Виконання скасовано",
+    "deleteTaskConfirm": "Видалити завдання \"{name}\"?",
     "reportTitle": "Повідомте про проблему",
     "problemDescription": "Опис проблеми",
     "problemPlaceholder": "Приклад: перегоріла лампочка",
@@ -1500,6 +1507,7 @@
     "pendingPayments": "Очікувані платежі",
     "monthlyPayments": "Щомісячні платежі",
     "noPaymentData": "Платіжних даних ще немає.",
+    "recentVisits": "Останні відвідування",
     "noVisits": "Відвідувань ще немає",
     "noWorkerTitle": "Немає профілю працівника",
     "noWorkerHint": "Створіть профіль працівника, щоб визначити контакти, ставку та графік оплати.",
@@ -1593,6 +1601,13 @@
         "area": "Надворі"
       }
     },
+    "rateType": "Тип розрахунку",
+    "rateDaily": "Денна ставка",
+    "rateHourly": "Погодинна ставка",
+    "hourlyRate": "Погодинна ставка",
+    "minutesWorked": "Відпрацьовані хвилини",
+    "hoursWorked": "Відпрацьовані години",
+    "computedAmount": "Розрахована сума",
     "setupProfileAction": "Створити профіль"
   },
   "userMultiSelect": {

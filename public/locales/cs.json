@@ -1294,6 +1294,13 @@
     "everyDays": "Každých {{days}} dní",
     "completeTask": "Splnit {{name}}",
     "taskDoneToast": "Úkol splněn.",
+    "editTask": "Upravit úkol",
+    "deleteTask": "Smazat úkol",
+    "undoTask": "Zrušit splnění",
+    "taskUpdatedToast": "Úkol aktualizován",
+    "taskDeletedToast": "Úkol smazán",
+    "taskUndoneToast": "Splnění zrušeno",
+    "deleteTaskConfirm": "Opravdu smazat úkol \"{name}\"?",
     "reportTitle": "Nahlásit problém",
     "problemDescription": "Popis problému",
     "problemPlaceholder": "Příklad: Vadná žárovka",
@@ -1319,6 +1326,7 @@
     "pendingPayments": "Čekající platby",
     "monthlyPayments": "Měsíční platby",
     "noPaymentData": "Zatím žádné platební údaje.",
+    "recentVisits": "Poslední návštěvy",
     "noVisits": "Zatím žádné návštěvy",
     "noWorkerTitle": "Žádný profil domácí péče",
     "noWorkerHint": "Vytvořte profil pro nastavení kontaktů, denní sazby a platebního rytmu.",
@@ -1412,6 +1420,13 @@
         "area": "Venkovní prostory"
       }
     },
+    "rateType": "Typ fakturace",
+    "rateDaily": "Denní sazba",
+    "rateHourly": "Hodinová sazba",
+    "hourlyRate": "Hodinová sazba",
+    "minutesWorked": "Pracovní minuty",
+    "hoursWorked": "Pracovní hodiny",
+    "computedAmount": "Vypočtená částka",
     "setupProfileAction": "Vytvořit profil"
   },
   "splitExpenses": {
