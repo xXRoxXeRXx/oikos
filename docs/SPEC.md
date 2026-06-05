@@ -135,6 +135,7 @@ Reusable recipe cards that can be pre-filled into meal slots.
 | attachment_data | TEXT | Base64 data URL of attachment (≤ 5 MB), nullable |
 | target_caldav_account_id | INTEGER | FK → CalDAV Accounts (for outbound sync), nullable |
 | target_caldav_calendar_url | TEXT | CalDAV calendar URL (for outbound sync), nullable |
+| target_google_calendar_id | TEXT | Google calendar ID for outbound sync, nullable. Mutually exclusive with the CalDAV target columns — an event syncs to at most one destination |
 
 ### Event Assignments
 Join table for multi-person calendar event assignment (migration v32). Existing `assigned_to` values were migrated automatically.
@@ -185,6 +186,26 @@ Per-account calendar enable/disable state for CalDAV accounts.
 | UNIQUE | | (account_id, calendar_url) |
 
 Index: CREATE INDEX idx_caldav_selection_enabled ON caldav_calendar_selection(account_id, enabled)
+
+### Google Calendar Selection
+Per-calendar enable/disable state for the connected Google account (migration v47). Mirrors the
+CalDAV selection model so multiple Google calendars sync and display at once. Each row carries its
+own incremental `sync_token`, because Google's `events.list` sync token is per-calendar.
+
+| Column | Type | Constraint |
+|--------|------|-----------|
+| calendar_id | TEXT | PRIMARY KEY — Google calendar ID (`primary`, email-like, …) |
+| name | TEXT | Display name, NOT NULL |
+| color | TEXT | HEX color from provider, nullable |
+| enabled | INTEGER | 0/1 (default 1), controls sync for this calendar |
+| sync_token | TEXT | Per-calendar incremental Google sync token, nullable |
+| last_sync | TEXT | ISO 8601, nullable |
+
+Index: CREATE INDEX idx_google_selection_enabled ON google_calendar_selection(enabled)
+
+Disabling a calendar removes its imported events and clears its `sync_token`, so re-enabling
+performs a clean full resync. Migration v47 carries any previously single-selected
+`sync_config.google_calendar_id` (Issue #220) into one enabled row.
 
 ### CalDAV Reminder Selection
 Per-account reminder-list selection for CalDAV accounts. Apple Reminders lists are CalDAV
@@ -783,7 +804,7 @@ Reusable recipe cards linked to meal slots.
 - **Multi-person assignment:** events can be assigned to multiple family members via the same `UserMultiSelect` component as tasks
 - Color-coding per person
 - Recurring via iCal RRULE (daily, weekly, monthly, yearly)
-- **Google Calendar:** OAuth 2.0, Calendar API v3, two-way sync. After connecting, an admin can pick which calendar to sync from a dropdown in Settings (defaults to `primary`); the selected calendar ID is stored in `sync_config` (`google_calendar_id`). Switching calendars resets the incremental sync token and re-imports events from the newly selected calendar. A **read-only mode** checkbox prevents Oikos from pushing any local events back to Google Calendar while still reading incoming events normally; the flag is stored as `google_readonly` in `sync_config` and cleared on disconnect.
+- **Google Calendar:** OAuth 2.0, Calendar API v3, two-way sync of **multiple calendars** at once. After connecting, an admin enables/disables each available calendar via checkboxes in Settings (state in `google_calendar_selection`); enabled calendars are imported together, each in its own color, with its own incremental sync token. Disabling a calendar removes its imported events and clears its token (clean resync on re-enable). Outbound is **per-event**: a local event is only pushed to Google when it carries an explicit target calendar (`calendar_events.target_google_calendar_id`), chosen via the unified sync-target picker in the event dialog; events without a target stay local. A **read-only mode** checkbox prevents Oikos from pushing any local events back to Google while still reading incoming events normally; the flag is stored as `google_readonly` in `sync_config` and cleared on disconnect.
 - **CalDAV Multi-Account:** Connect multiple CalDAV servers (iCloud, Nextcloud, Radicale, Baikal) with per-account calendar selection via checkboxes, two-way sync (tsdav), optional outbound target selection per event
 - **ICS Subscriptions:** Subscribe to any public ICS/webcal URL (e.g. public holidays, sports schedules). Per-subscription color, private/shared visibility, manual "Sync now" and automatic sync on the shared interval. Edit name, color, and visibility of any subscription inline. RRULE events expanded into a rolling ±6/+12 month window. SSRF-protected (DNS pre-resolution), ETag/Last-Modified conditional fetch, 10 MB limit, 15 s timeout. User-edited events are protected from being overwritten (`user_modified`); a "Reset to original" link restores them.
 - **External calendar names & colors:** Google and Apple sync stores each calendar's display name and background color in the `external_calendars` table (migration v14). A colored `event-cal-label` badge appears in event popups, agenda, month, week, and day views when `cal_name` is present.
@@ -876,7 +897,7 @@ User management and app configuration. Logged-in users only.
 - **Module toggles (admin, Settings → General):** individual modules (Tasks, Calendar, Shopping, Meals, Recipes, Birthdays, Notes, Contacts, Budget, Documents, Housekeeping) can be disabled to hide them from navigation. Data is preserved and reappears when re-enabled. Dashboard and Settings remain essential and cannot be disabled. Stored as `disabled_modules` key in `sync_config`.
 - **Housekeeping (admin):** toggle for automatic payment task creation on work session check-in.
 - **Synchronization tab:** unified tab for calendar and contact sync, replacing the old Calendar tab. Contains two sections:
-  - **Calendar Sync:** connect/disconnect Google Calendar (OAuth 2.0), pick which Google calendar to sync from a dropdown, and optionally enable read-only mode to prevent outbound writes; manage multiple CalDAV accounts (iCloud, Nextcloud, Radicale, Baikal) with per-account calendar selection via checkboxes, two-way sync, and optional outbound event target; manage ICS URL subscriptions (add, delete, sync now, set color and visibility); configure sync interval
+  - **Calendar Sync:** connect/disconnect Google Calendar (OAuth 2.0), enable/disable multiple Google calendars to sync via checkboxes, and optionally enable read-only mode to prevent outbound writes; manage multiple CalDAV accounts (iCloud, Nextcloud, Radicale, Baikal) with per-account calendar selection via checkboxes, two-way sync, and a unified per-event sync-target picker (Google or CalDAV); manage ICS URL subscriptions (add, delete, sync now, set color and visibility); configure sync interval
   - **Contact Sync:** manage multiple CardDAV accounts (iCloud, Nextcloud, Radicale, Baikal); per-addressbook enable/disable; manual sync trigger; real-time status badges (success, error, syncing with animated spinner)
 - **Weather:** configure OpenWeatherMap location
 - **Language:** System (follows `navigator.language`), German, English, Spanish, French, Italian, Swedish, Greek, Russian, Turkish, Chinese, Japanese, Arabic, Hindi, Portuguese, Ukrainian, Polish - via `oikos-locale-picker` web component; switch without page reload
