@@ -10,6 +10,7 @@ import { openModal as openSharedModal, closeModal } from '/components/modal.js';
 import { stagger } from '/utils/ux.js';
 import { t, formatDate as formatPreferredDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid, formatTimeInput, parseTimeInput, timeInputPlaceholder } from '/i18n.js';
 import { esc, fmtLocation } from '/utils/html.js';
+import { shiftEndDateKey, isEndBeforeStart } from '/utils/date.js';
 import { refresh as refreshReminders } from '/reminders.js';
 import { renderUserMultiSelect, getSelectedUserIds, bindUserMultiSelect, renderAvatarStack } from '/components/user-multi-select.js';
 
@@ -1808,6 +1809,28 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
         loadSyncTargets(syncTargetSelect, event);
       }
 
+      // Enddatum dem Startdatum nachführen, damit das Verschieben des Starts
+      // das Ende nicht davor zurücklässt (Dauer bleibt erhalten).
+      const wireDateFollow = (startSel, endSel) => {
+        const startEl = panel.querySelector(startSel);
+        const endEl   = panel.querySelector(endSel);
+        if (!startEl || !endEl) return;
+        let prevStart = startEl.value;
+        startEl.addEventListener('change', () => {
+          if (isDateInputValid(startEl.value) && isDateInputValid(endEl.value)) {
+            const oldKey = parseDateInput(prevStart);
+            const newKey = parseDateInput(startEl.value);
+            const endKey = parseDateInput(endEl.value);
+            if (oldKey && newKey && endKey) {
+              endEl.value = formatDateInput(shiftEndDateKey(oldKey, newKey, endKey));
+            }
+          }
+          prevStart = startEl.value;
+        });
+      };
+      wireDateFollow('#modal-start-date', '#modal-end-date');
+      wireDateFollow('#modal-allday-start', '#modal-allday-end');
+
       panel.querySelector('#modal-cancel').addEventListener('click', closeModal);
 
       panel.querySelector('#modal-delete')?.addEventListener('click', async () => {
@@ -2018,6 +2041,10 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null, attach
   const hasInvalidDate = visibleDateFields.some((selector) => !isDateInputValid(overlay.querySelector(selector)?.value));
   if (!start_datetime || hasInvalidDate) {
     window.oikos?.showToast(t('calendar.invalidDate'), 'error');
+    return;
+  }
+  if (isEndBeforeStart(start_datetime, end_datetime)) {
+    window.oikos?.showToast(t('calendar.endBeforeStart'), 'error');
     return;
   }
 

@@ -503,6 +503,7 @@
     "iconMoon": "ليل",
     "iconWeather": "طقس",
     "invalidDate": "Use a valid date in the selected date format.",
+    "endBeforeStart": "The end date can't be before the start date.",
     "attachmentLabel": "Attachment",
     "attachmentHint": "Attach a local image, PDF, or document. Images will be shown in the event popup.",
     "attachmentFallback": "Attachment",

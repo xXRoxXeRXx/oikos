@@ -91,6 +91,20 @@ const STUBS = {
       d.setDate(d.getDate() - diff);
       return toLocalDateKey(d);
     };
+    export const shiftEndDateKey = (oldStartKey, newStartKey, endKey) => {
+      const from = new Date(String(oldStartKey) + 'T00:00:00');
+      const to = new Date(String(newStartKey) + 'T00:00:00');
+      const deltaDays = Math.round((to.getTime() - from.getTime()) / 86400000);
+      return addLocalDays(endKey, deltaDays);
+    };
+    export const isEndBeforeStart = (startDatetime, endDatetime) => {
+      if (!endDatetime) return false;
+      const [startDay, startTime] = String(startDatetime).split('T');
+      const [endDay, endTime] = String(endDatetime).split('T');
+      if (endDay !== startDay) return endDay < startDay;
+      if (startTime && endTime) return endTime < startTime;
+      return false;
+    };
   `,
 };
 

@@ -503,6 +503,7 @@
     "iconMoon": "Noc",
     "iconWeather": "Počasí",
     "invalidDate": "Použijte platné datum ve zvoleném formátu.",
+    "endBeforeStart": "The end date can't be before the start date.",
     "caldavTargetLabel": "Synchronizovat s CalDAV",
     "caldavTargetLocal": "Ukládat pouze lokálně",
     "caldavTargetHint": "Vyberte CalDAV kalendář pro synchronizaci této události.",

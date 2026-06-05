@@ -503,6 +503,7 @@
     "iconMoon": "Nacht",
     "iconWeather": "Weer",
     "invalidDate": "Gebruik een geldige datum in het geselecteerde datumformaat.",
+    "endBeforeStart": "The end date can't be before the start date.",
     "caldavTargetLabel": "Synchroniseren met CalDAV",
     "caldavTargetLocal": "Alleen lokaal opslaan",
     "caldavTargetHint": "Kies een CalDAV-kalender om dit evenement mee te synchroniseren.",

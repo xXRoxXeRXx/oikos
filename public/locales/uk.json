@@ -503,6 +503,7 @@
     "iconMoon": "Ніч",
     "iconWeather": "Погода",
     "invalidDate": "Використовуйте дійсну дату у вибраному форматі дати.",
+    "endBeforeStart": "The end date can't be before the start date.",
     "attachmentLabel": "Вкладення",
     "attachmentHint": "Додайте локальне зображення, PDF або документ. Зображення відображатимуться у спливаючому вікні події.",
     "attachmentFallback": "Вкладення",

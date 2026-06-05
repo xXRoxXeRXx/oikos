@@ -503,6 +503,7 @@
     "iconMoon": "Noite",
     "iconWeather": "Tempo",
     "invalidDate": "Use uma data válida no formato selecionado.",
+    "endBeforeStart": "The end date can't be before the start date.",
     "attachmentLabel": "Anexo",
     "attachmentHint": "Anexe uma imagem, PDF ou documento local. Imagens aparecem no pop-up do evento.",
     "attachmentFallback": "Anexo",

@@ -519,6 +519,7 @@
     "iconMoon": "Noc",
     "iconWeather": "Pogoda",
     "invalidDate": "Proszę użyć prawidłowej daty w wybranym formacie.",
+    "endBeforeStart": "The end date can't be before the start date.",
     "caldavTargetLabel": "Synchronizuj z CalDAV",
     "caldavTargetLocal": "Tylko lokalnie",
     "caldavTargetHint": "Wybierz kalendarz CalDAV, aby synchronizować to wydarzenie.",
