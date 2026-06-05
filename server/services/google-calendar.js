@@ -312,7 +312,7 @@ async function sync() {
     try {
       const meta = await calendar.calendarList.get({ calendarId });
       calColor   = meta.data.backgroundColor || GOOGLE_COLOR;
-      roleCache.set(calendarId, meta.data.accessRole);
+      roleCache.set(calendarId, meta.data.accessRole ?? null);
       const calName = meta.data.summaryOverride || meta.data.summary || 'Google Calendar';
       calRefId   = upsertExternalCalendar('google', calendarId, calName, calColor);
     } catch (err) {

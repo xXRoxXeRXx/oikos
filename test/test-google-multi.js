@@ -113,10 +113,11 @@ test('isWritableRole: owner/writer → true', () => {
   assertEqual(__test.isWritableRole('writer'), true);
 });
 
-test('isWritableRole: reader/freeBusyReader/undefined → false', () => {
+test('isWritableRole: reader/freeBusyReader/undefined/null → false', () => {
   assertEqual(__test.isWritableRole('reader'), false);
   assertEqual(__test.isWritableRole('freeBusyReader'), false);
   assertEqual(__test.isWritableRole(undefined), false);
+  assertEqual(__test.isWritableRole(null), false);
 });
 
 console.log(`\n[Google Multi] ${passed} passed, ${failed} failed\n`);
