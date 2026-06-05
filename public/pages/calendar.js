@@ -1589,52 +1589,64 @@ function bindTimeInputs(root) {
 // CalDAV Target Helpers
 // --------------------------------------------------------
 
-async function loadCalDAVTargets(selectElement, currentEvent = null) {
+async function loadSyncTargets(selectElement, currentEvent = null) {
   if (!selectElement) return;
 
+  selectElement.replaceChildren();
+  const localOption = document.createElement('option');
+  localOption.value = '';
+  localOption.textContent = t('calendar.syncTargetLocal');
+  selectElement.appendChild(localOption);
+
+  // Google calendars (enabled only)
+  try {
+    const res = await api.get('/calendar/google/calendars');
+    const enabled = (res.data || []).filter((c) => c.enabled);
+    if (enabled.length) {
+      const group = document.createElement('optgroup');
+      group.label = t('calendar.syncTargetGoogleGroup');
+      for (const cal of enabled) {
+        const option = document.createElement('option');
+        option.value = `google:${cal.id}`;
+        option.textContent = cal.summary || cal.id;
+        group.appendChild(option);
+      }
+      selectElement.appendChild(group);
+    }
+  } catch (err) {
+    console.warn('Failed to load Google targets:', err);
+  }
+
+  // CalDAV calendars (enabled only), grouped per account
   try {
     const accountsRes = await api.get('/calendar/caldav/accounts');
-    const accounts = accountsRes.data || [];
-
-    // Keep only the "local" option
-    selectElement.replaceChildren();
-    const localOption = document.createElement('option');
-    localOption.value = '';
-    localOption.textContent = t('calendar.caldavTargetLocal');
-    selectElement.appendChild(localOption);
-
-    // Load calendars for each account and build options
-    for (const account of accounts) {
+    for (const account of accountsRes.data || []) {
       try {
-        const calendarsRes = await api.get(`/calendar/caldav/accounts/${account.id}/calendars`);
-        const calendars = calendarsRes.data || [];
-        const enabledCalendars = calendars.filter((cal) => cal.enabled);
-
-        if (enabledCalendars.length === 0) continue;
-
-        const optgroup = document.createElement('optgroup');
-        optgroup.label = account.name;
-
-        for (const calendar of enabledCalendars) {
+        const calRes = await api.get(`/calendar/caldav/accounts/${account.id}/calendars`);
+        const enabled = (calRes.data || []).filter((cal) => cal.enabled);
+        if (!enabled.length) continue;
+        const group = document.createElement('optgroup');
+        group.label = `${t('calendar.syncTargetCaldavGroup')} · ${account.name}`;
+        for (const cal of enabled) {
           const option = document.createElement('option');
-          option.value = `${account.id}|${calendar.calendarUrl}`;
-          option.textContent = calendar.calendarName || calendar.calendarUrl;
-          optgroup.appendChild(option);
+          option.value = `caldav:${account.id}|${cal.calendarUrl}`;
+          option.textContent = cal.calendarName || cal.calendarUrl;
+          group.appendChild(option);
         }
-
-        selectElement.appendChild(optgroup);
+        selectElement.appendChild(group);
       } catch (err) {
         console.warn(`Failed to load calendars for account ${account.id}:`, err);
       }
     }
-
-    // Pre-select current event's target if editing
-    if (currentEvent?.target_caldav_account_id && currentEvent?.target_caldav_calendar_url) {
-      const targetValue = `${currentEvent.target_caldav_account_id}|${currentEvent.target_caldav_calendar_url}`;
-      selectElement.value = targetValue;
-    }
   } catch (err) {
     console.warn('Failed to load CalDAV targets:', err);
+  }
+
+  // Pre-select the editing event's existing target
+  if (currentEvent?.target_google_calendar_id) {
+    selectElement.value = `google:${currentEvent.target_google_calendar_id}`;
+  } else if (currentEvent?.target_caldav_account_id && currentEvent?.target_caldav_calendar_url) {
+    selectElement.value = `caldav:${currentEvent.target_caldav_account_id}|${currentEvent.target_caldav_calendar_url}`;
   }
 }
 
@@ -1790,10 +1802,10 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
         if (reminderCustom) reminderCustom.hidden = reminderOffset.value !== 'custom';
       });
 
-      // Load CalDAV targets
-      const caldavTargetSelect = panel.querySelector('#event-caldav-target');
-      if (caldavTargetSelect) {
-        loadCalDAVTargets(caldavTargetSelect, event);
+      // Load unified sync targets (Google + CalDAV)
+      const syncTargetSelect = panel.querySelector('#event-sync-target');
+      if (syncTargetSelect) {
+        loadSyncTargets(syncTargetSelect, event);
       }
 
       panel.querySelector('#modal-cancel').addEventListener('click', closeModal);
@@ -1914,11 +1926,11 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
     </div>
 
     <div class="form-group">
-      <label class="form-label" for="event-caldav-target">${t('calendar.caldavTargetLabel')}</label>
-      <select class="form-input" id="event-caldav-target">
-        <option value="">${t('calendar.caldavTargetLocal')}</option>
+      <label class="form-label" for="event-sync-target">${t('calendar.syncTargetLabel')}</label>
+      <select class="form-input" id="event-sync-target">
+        <option value="">${t('calendar.syncTargetLocal')}</option>
       </select>
-      <small class="form-hint">${t('calendar.caldavTargetHint')}</small>
+      <small class="form-hint">${t('calendar.syncTargetHint')}</small>
     </div>
 
     <div class="form-group">
@@ -2035,13 +2047,16 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null, attach
       attachmentPayload.data = await readFileAsDataUrl(attachmentFile);
     }
 
-    // Extract CalDAV target
-    const caldavTargetValue = overlay.querySelector('#event-caldav-target')?.value || '';
+    // Extract sync target (unified Google + CalDAV picker)
+    const syncTargetValue = overlay.querySelector('#event-sync-target')?.value || '';
+    let target_google_calendar_id = null;
     let target_caldav_account_id = null;
     let target_caldav_calendar_url = null;
 
-    if (caldavTargetValue) {
-      const [accountId, calendarUrl] = caldavTargetValue.split('|');
+    if (syncTargetValue.startsWith('google:')) {
+      target_google_calendar_id = syncTargetValue.slice('google:'.length);
+    } else if (syncTargetValue.startsWith('caldav:')) {
+      const [accountId, calendarUrl] = syncTargetValue.slice('caldav:'.length).split('|');
       if (accountId && calendarUrl) {
         target_caldav_account_id = parseInt(accountId, 10);
         target_caldav_calendar_url = calendarUrl;
@@ -2064,6 +2079,7 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null, attach
       document_description: attachmentPayload.name
         ? t('calendar.attachmentDocumentDescription', { title })
         : null,
+      target_google_calendar_id,
       target_caldav_account_id,
       target_caldav_calendar_url,
     };
