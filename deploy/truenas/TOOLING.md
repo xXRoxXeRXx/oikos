@@ -27,17 +27,16 @@ und schreibt `catalog-version.json` fort.
 ausgelöst werden. Ablauf pro Lauf: den Branch `community/oikos` **frisch aus
 `upstream/master` (truenas/apps) bauen** (der Branch wird nach jedem Merge
 gelöscht, daher kein Verlass darauf), die Versionsdateien hineingenerieren,
-`community/oikos` force-pushen, `catalog-version.json` zurück nach `main`
-committen und den PR gegen `truenas/apps:master` öffnen/aktualisieren. Da auf
-aktuellem upstream aufgesetzt wird (inkl. der bereits gemergten Library), ist
-der PR-Diff sauber nur der Versions-Bump.
+`community/oikos` force-pushen und `catalog-version.json` zurück nach `main`
+committen. Den PR gegen `truenas/apps:master` öffnet anschließend automatisch
+der offizielle TrueNAS-Bot auf Basis des gepushten Branches — keine manuelle
+oder CI-seitige PR-Erstellung nötig.
 
 ## Voraussetzungen für die Automatik
 
 - Secret `TRUENAS_FORK_TOKEN` im Oikos-Repo (Settings → Secrets → Actions):
-  ein PAT des Fork-Owners mit `repo`-Scope. Der Token muss **auch auf das
-  Basis-Repo `truenas/apps`** PR-Schreibrechte haben, sonst schlägt `gh pr create`
-  fehl.
+  ein PAT des Fork-Owners mit `repo`-Scope (nur Schreibzugriff auf den Fork
+  `ulsklyc/apps` nötig — keine PR-Rechte auf `truenas/apps` erforderlich).
 - `main` darf keine Branch-Protection-Regel haben, die den `github-actions[bot]`
   am direkten Push hindert — sonst schlägt der Rück-Commit der
   `catalog-version.json` fehl.

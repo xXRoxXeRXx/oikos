@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.62.3] - 2026-06-05
+
+### Fixed
+- Date input fields now reject letter keystrokes at the keyboard level, so only digits and the separators `.`, `/`, and `-` can be typed in date fields. Time input fields allow digits, `:`, space, and AM/PM characters (`a`, `p`, `m`). Modifier-key combinations (Ctrl, Cmd, Alt) pass through unblocked. Applies to task, calendar, meal-plan, and recurrence-rule date/time inputs (#242).
+- Typing a bare hour (e.g. `15` or `9`) in a time field now expands automatically to a full time on blur: `15:00`, `09:00`. Previously only `HH:MM` and `H:MM AM/PM` formats were accepted (#242).
+- Typing an 8-digit date string without separators (e.g. `09062026`) is now accepted in date fields and formatted according to the locale date preference (DMY → `2026-06-09`, MDY → `2026-09-06`, YMD → `2026-06-09`) (#242).
+
 ## [0.62.2] - 2026-06-05
 
 ### Fixed
