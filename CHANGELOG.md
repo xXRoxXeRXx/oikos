@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.63.6] - 2026-06-06
+
+### Changed
+- Module page headers (Tasks, Notes, Housekeeping, Documents, Calendar) now share a single `.page-toolbar` shell, giving every module the same header height, spacing, sticky behaviour, and title typography so the head no longer shifts when switching modules. The Documents header is now sticky and uses the standard page background like every other module.
+
 ## [0.63.5] - 2026-06-06
 
 ### Changed
