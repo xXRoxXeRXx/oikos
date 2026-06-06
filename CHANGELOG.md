@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.63.5] - 2026-06-06
+
+### Changed
+- Dashboard corner radii now use shared design tokens instead of hardcoded pixel values, with two new scale endpoints (`--radius-2xs`, `--radius-2xl`) for consistent rounding across the design system.
+- The housekeeping empty state now uses the shared `.empty-state` component, matching the look of empty states in other modules.
+
 ## [0.63.4] - 2026-06-05
 
 ### Fixed
