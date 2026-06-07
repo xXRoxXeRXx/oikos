@@ -70,7 +70,10 @@ async function toggleShoppingItem(id, checked, container) {
   const item = state.items.find((i) => i.id === id);
   if (item) {
     item.is_checked = newVal;
-    updateItemsList(container);
+    // Nur die betroffene Zeile aktualisieren — kein Komplett-Re-Render,
+    // damit die Scroll-Position der Liste erhalten bleibt (Issue #276).
+    updateItemRow(container, item);
+    updateClearCheckedButton(container);
     updateListCounter(state.activeListId, 0, newVal ? 1 : -1);
     renderTabs(container);
   }
@@ -79,8 +82,13 @@ async function toggleShoppingItem(id, checked, container) {
     await api.patch(`/shopping/items/${id}`, { is_checked: newVal });
     vibrate(10);
   } catch (err) {
-    if (item) item.is_checked = checked;
-    updateItemsList(container);
+    if (item) {
+      item.is_checked = checked;
+      updateItemRow(container, item);
+      updateClearCheckedButton(container);
+      updateListCounter(state.activeListId, 0, newVal ? -1 : 1);
+      renderTabs(container);
+    }
     window.oikos.showToast(err.message, 'danger');
   }
 }
@@ -510,7 +518,9 @@ function wireSwipeGestures(container) {
           const item   = state.items.find((i) => i.id === itemId);
           if (item) {
             item.is_checked = newVal;
-            updateItemsList(container);
+            // Nur die Zeile aktualisieren — Scroll-Position bewahren (Issue #276).
+            updateItemRow(container, item);
+            updateClearCheckedButton(container);
             updateListCounter(state.activeListId, 0, newVal ? 1 : -1);
             renderTabs(container);
           }
@@ -518,8 +528,13 @@ function wireSwipeGestures(container) {
             await api.patch(`/shopping/items/${itemId}`, { is_checked: newVal });
             vibrate(10);
           } catch (err) {
-            if (item) item.is_checked = checked;
-            updateItemsList(container);
+            if (item) {
+              item.is_checked = checked;
+              updateItemRow(container, item);
+              updateClearCheckedButton(container);
+              updateListCounter(state.activeListId, 0, newVal ? -1 : 1);
+              renderTabs(container);
+            }
             window.oikos.showToast(err.message, 'danger');
           }
         }, 200);
@@ -554,6 +569,40 @@ function wireSwipeGestures(container) {
 // DOM-Updates (ohne komplettes Re-Render)
 // --------------------------------------------------------
 
+/**
+ * Aktualisiert nur die DOM-Zeile eines einzelnen Artikels (Checked-Status),
+ * ohne die gesamte Liste neu aufzubauen. Da das Abhaken die Gruppierung nicht
+ * ändert, bleibt so die Scroll-Position des Listen-Containers erhalten (Issue #276).
+ */
+function updateItemRow(container, item) {
+  const row = container.querySelector(`.swipe-row[data-swipe-id="${item.id}"]`);
+  if (!row) return;
+  const isDone = Boolean(item.is_checked);
+
+  row.dataset.swipeChecked = String(item.is_checked);
+
+  row.querySelector('.shopping-item')?.classList.toggle('shopping-item--checked', isDone);
+
+  const checkBtn = row.querySelector('.item-check');
+  if (checkBtn) {
+    checkBtn.classList.toggle('item-check--checked', isDone);
+    checkBtn.dataset.checked = String(item.is_checked);
+    checkBtn.setAttribute('aria-label', isDone
+      ? t('shopping.markUndoneLabel', { name: item.name })
+      : t('shopping.markDoneLabel', { name: item.name }));
+  }
+
+  // Swipe-Affordance (links) spiegelt den neuen Status
+  const reveal = row.querySelector('.swipe-reveal--done');
+  if (reveal) {
+    reveal.replaceChildren();
+    reveal.insertAdjacentHTML('beforeend', `
+      <i data-lucide="${isDone ? 'rotate-ccw' : 'check'}" class="icon-xl" aria-hidden="true"></i>
+      <span>${isDone ? t('shopping.swipeBack') : t('shopping.swipeCheck')}</span>`);
+    if (window.lucide) window.lucide.createIcons({ el: reveal });
+  }
+}
+
 function updateItemsList(container) {
   const listEl = container.querySelector('#items-list');
   if (listEl) {
@@ -567,7 +616,11 @@ function updateItemsList(container) {
       document.querySelector('.page-fab')?.click();
     });
   }
-  // clear-checked Button aktualisieren
+  updateClearCheckedButton(container);
+}
+
+/** Blendet den „Abgehakte löschen“-Button je nach Anzahl abgehakter Artikel ein/aus. */
+function updateClearCheckedButton(container) {
   const checkedCount = state.items.filter((i) => i.is_checked).length;
   const clearBtn     = container.querySelector('[data-action="clear-checked"]');
   const header       = container.querySelector('.list-header__actions');

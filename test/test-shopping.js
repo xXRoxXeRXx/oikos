@@ -230,6 +230,24 @@ test('Nicht existierende Liste gibt keine Zeile', () => {
 });
 
 // --------------------------------------------------------
+// Scroll-Erhalt beim Abhaken (Issue #276)
+// --------------------------------------------------------
+test('Abhaken aktualisiert nur die betroffene Zeile statt die ganze Liste neu zu rendern', () => {
+  const source = readFileSync(new URL('../public/pages/shopping.js', import.meta.url), 'utf8');
+  assert(/function updateItemRow\(container, item\)/.test(source), 'updateItemRow-Helper muss existieren');
+
+  // toggleShoppingItem darf die Liste nicht mehr komplett neu aufbauen (würde scrollTop auf 0 klemmen)
+  const toggleFn = source.match(/async function toggleShoppingItem[\s\S]*?\n}/)?.[0] ?? '';
+  assert(toggleFn, 'toggleShoppingItem muss auffindbar sein');
+  assert(/updateItemRow\(container, item\)/.test(toggleFn), 'Klick-Toggle muss updateItemRow nutzen');
+  assert(!/updateItemsList\(/.test(toggleFn), 'Klick-Toggle darf updateItemsList nicht mehr aufrufen');
+
+  // updateItemRow darf den Listen-Container nicht leeren
+  const rowFn = source.match(/function updateItemRow[\s\S]*?\n}/)?.[0] ?? '';
+  assert(!/#items-list/.test(rowFn), 'updateItemRow darf den Listen-Container nicht ansprechen/leeren');
+});
+
+// --------------------------------------------------------
 // Ergebnis
 // --------------------------------------------------------
 console.log(`\n[Shopping-Test] Ergebnis: ${passed} bestanden, ${failed} fehlgeschlagen\n`);

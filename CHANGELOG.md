@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.64.2] - 2026-06-07
+
+### Fixed
+- Checking or unchecking an item in a long shopping list no longer scrolls the list back to the top — only the affected row is updated instead of re-rendering the whole list, so your scroll position is preserved while shopping (#276).
+
 ## [0.64.1] - 2026-06-07
 
 ### Removed
