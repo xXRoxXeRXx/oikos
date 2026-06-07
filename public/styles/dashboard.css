@@ -720,6 +720,7 @@
   transition: background-color var(--transition-fast);
   text-align: center;
   min-height: 72px;
+  min-width: 0;
 }
 
 .meal-slot:hover {
