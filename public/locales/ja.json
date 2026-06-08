@@ -371,6 +371,7 @@
     "assignedLabel": "担当者",
     "assignedNobody": "- なし -",
     "colorLabel": "色 {{color}}",
+    "colorOverriddenByAssignee": "色は割り当てられたユーザーによって上書きされます",
     "descriptionLabel": "説明",
     "descriptionPlaceholder": "任意…",
     "popupEdit": "編集",

@@ -371,6 +371,7 @@
     "assignedLabel": "Призначено",
     "assignedNobody": "- Нікому -",
     "colorLabel": "Колір {{color}}",
+    "colorOverriddenByAssignee": "Колір замінюється призначеними користувачами",
     "descriptionLabel": "Опис",
     "descriptionPlaceholder": "Необов'язково…",
     "popupEdit": "Редагувати",

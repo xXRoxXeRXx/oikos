@@ -322,6 +322,44 @@ function getContrastColor(hex) {
 }
 
 // --------------------------------------------------------
+// Farbberechnung: Assignee-Farben haben Vorrang
+// Hierarchie: Assignees → manuelle Event-Farbe → Kalenderfarbe → Grau
+// --------------------------------------------------------
+
+/** Neutrale Fallback-Farbe wenn weder Assignee noch manuelle Farbe gesetzt. */
+const FALLBACK_COLOR = '#8E8E93';
+
+/**
+ * Gibt die primäre Einzelfarbe eines Events zurück.
+ * Wird für Textkontrastberechnung und Stellen genutzt, die keine Gradienten unterstützen.
+ * Priorität: 1. erster Assignee, 2. ev.color, 3. ev.cal_color, 4. Grau.
+ */
+function resolveEventColor(ev) {
+  const assignees = ev.assigned_users ?? [];
+  if (assignees.length > 0) return assignees[0].color || FALLBACK_COLOR;
+  return ev.color || ev.cal_color || FALLBACK_COLOR;
+}
+
+/**
+ * Gibt einen CSS-Farbwert oder einen CSS-Gradienten zurück.
+ * - Kein Assignee → manuelle Event-Farbe → Kalenderfarbe → Grau (immer einfarbig)
+ * - 1 Assignee → dessen Avatar-Farbe
+ * - N Assignees → diagonaler Gradient aller Avatar-Farben (135°, gleichmäßig aufgeteilt)
+ */
+function resolveEventBackground(ev) {
+  const assignees = ev.assigned_users ?? [];
+  if (assignees.length === 0) return ev.color || ev.cal_color || FALLBACK_COLOR;
+  if (assignees.length === 1) return assignees[0].color || FALLBACK_COLOR;
+  const colors = assignees.map((u) => u.color || FALLBACK_COLOR);
+  const step = 100 / colors.length;
+  const stops = colors.flatMap((c, i) => [
+    `${c} ${i * step}%`,
+    `${c} ${(i + 1) * step}%`,
+  ]);
+  return `linear-gradient(135deg, ${stops.join(', ')})`;
+}
+
+// --------------------------------------------------------
 // State
 // --------------------------------------------------------
 
@@ -994,12 +1032,12 @@ function renderMonthDay(date, inMonth) {
   const extra    = evs.length - MAX_SHOW;
 
   const evHtml = shown.map((ev) => {
-    const bg = ev.color || ev.cal_color;
-    const fg = getContrastColor(bg);
+    const bg = resolveEventBackground(ev);
+    const fg = getContrastColor(resolveEventColor(ev));
     return `
     <div class="month-day__event"
          data-id="${ev.id}"
-         style="background-color:${esc(bg)};${fg ? `color:${fg};` : ''}"
+         style="background:${esc(bg)};${fg ? `color:${fg};` : ''}"
          title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}"
     >${eventIconHtml(ev.icon, 'event-icon event-icon--compact')}<span>${esc(ev.title)}</span>${(ev.recurrence_rule || ev.is_recurring_instance) ? calendarRepeatIconHtml() : ''}</div>
   `;
@@ -1060,11 +1098,15 @@ function renderWeekView(container) {
         <div class="calendar-all-day-label">${t('calendar.allDayShort')}</div>
         ${days.map((d, i) => `
           <div class="allday-cell">
-            ${alldayEvs[i].map((ev) => `
+            ${alldayEvs[i].map((ev) => {
+              const bg = resolveEventBackground(ev);
+              const fg = getContrastColor(resolveEventColor(ev));
+              return `
               <div class="allday-event" data-id="${ev.id}"
-                   style="${ev.color || ev.cal_color ? `background-color:${esc(ev.color || ev.cal_color)};` : ''}${getContrastColor(ev.color || ev.cal_color) ? `color:${getContrastColor(ev.color || ev.cal_color)};` : ''}"
+                   style="background:${esc(bg)};${fg ? `color:${fg};` : ''}"
                    title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}">${eventIconHtml(ev.icon, 'event-icon event-icon--compact')}<span>${esc(ev.title)}</span></div>
-            `).join('')}
+            `;
+            }).join('')}
             ${tasksOnDay(d).map(renderTaskChip).join('')}
           </div>
         `).join('')}
@@ -1141,10 +1183,12 @@ function renderWeekEvent(ev, layout = null) {
   const height = (duration / 60) * HOUR_HEIGHT - 2;
   const left = layout ? `calc(${(layout.colIndex / layout.totalCols) * 100}% + 2px)` : '2px';
   const width = layout ? `calc(${100 / layout.totalCols}% - 4px)` : 'auto';
+  const bg = resolveEventBackground(ev);
+  const fg = getContrastColor(resolveEventColor(ev));
 
   return `
     <div class="week-event" data-id="${ev.id}"
-         style="top:${top}px;height:${height}px;left:${left};width:${width};${ev.color || ev.cal_color ? `background-color:${esc(ev.color || ev.cal_color)};` : ''}${getContrastColor(ev.color || ev.cal_color) ? `color:${getContrastColor(ev.color || ev.cal_color)};` : ''}">
+         style="top:${top}px;height:${height}px;left:${left};width:${width};background:${esc(bg)};${fg ? `color:${fg};` : ''}">
       <div class="week-event__title">${eventIconHtml(ev.icon, 'event-icon event-icon--compact')}<span>${esc(ev.title)}</span>${(ev.recurrence_rule || ev.is_recurring_instance) ? calendarRepeatIconHtml() : ''}</div>
       <div class="week-event__time">${formatTime(ev.start_datetime)}${ev.end_datetime ? '–' + formatTime(ev.end_datetime) : ''}</div>
     </div>
@@ -1244,10 +1288,14 @@ function renderDayView(container) {
       <div class="allday-row" style="display:grid;grid-template-columns:var(--space-12) 1fr;">
         <div class="calendar-all-day-label">${t('calendar.allDayShort')}</div>
         <div class="allday-cell">
-          ${allday.map((ev) => `
+          ${allday.map((ev) => {
+            const bg = resolveEventBackground(ev);
+            const fg = getContrastColor(resolveEventColor(ev));
+            return `
             <div class="allday-event" data-id="${ev.id}"
-                 style="${ev.color || ev.cal_color ? `background-color:${esc(ev.color || ev.cal_color)};` : ''}${getContrastColor(ev.color || ev.cal_color) ? `color:${getContrastColor(ev.color || ev.cal_color)};` : ''}"
-                 title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}">${eventIconHtml(ev.icon, 'event-icon event-icon--compact')}<span>${esc(ev.title)}</span></div>`).join('')}
+                 style="background:${esc(bg)};${fg ? `color:${fg};` : ''}"
+                 title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}">${eventIconHtml(ev.icon, 'event-icon event-icon--compact')}<span>${esc(ev.title)}</span></div>`;
+          }).join('')}
           ${tasksOnDay(state.cursor).map(renderTaskChip).join('')}
         </div>
       </div>` : ''}
@@ -1370,17 +1418,19 @@ function renderAgendaEvent(ev, dayStr) {
         + (ev.end_datetime ? ` – ${formatTime(ev.end_datetime)} ${t('calendar.timeSuffix')}`.trimEnd() : ` ${t('calendar.timeSuffix')}`.trimEnd());
   }
 
-  const displayColor = ev.color || ev.cal_color;
+  const displayBg     = resolveEventBackground(ev);
+  const displayColor  = resolveEventColor(ev);
+  const calLabelColor = ev.cal_color || ev.color || displayColor;
   const assignedUsers = ev.assigned_users ?? [];
   return `
     <div class="agenda-event" data-id="${ev.id}">
-      <div class="agenda-event__color" style="background-color:${esc(displayColor)};"></div>
+      <div class="agenda-event__color" style="background:${esc(displayBg)};"></div>
       <div class="agenda-event__body">
         <div class="agenda-event__title">${eventIconHtml(ev.icon)}<span>${esc(ev.title)}</span>${(ev.recurrence_rule || ev.is_recurring_instance) ? calendarRepeatIconHtml() : ''}</div>
         <div class="agenda-event__meta">
           <span class="calendar-meta-item">${calendarMetaIconHtml('clock')}<span>${esc(timeStr)}</span></span>
           ${ev.location ? `<span class="calendar-meta-item">${calendarMetaIconHtml('map-pin')}<span>${esc(fmtLocation(ev.location))}</span></span>` : ''}
-          ${ev.cal_name ? `<span class="event-cal-label" style="--cal-color:${esc(displayColor)}">${esc(ev.cal_name)}</span>` : ''}
+          ${ev.cal_name ? `<span class="event-cal-label" style="--cal-color:${esc(calLabelColor)}">${esc(ev.cal_name)}</span>` : ''}
           ${assignedUsers.length ? `<span class="agenda-event__assigned">${renderAvatarStack(assignedUsers, { size: 20, maxVisible: 3 })}</span>` : ''}
         </div>
       </div>
@@ -1404,12 +1454,14 @@ function showEventPopup(ev, anchor) {
     : formatDateTime(ev.start_datetime)
       + (ev.end_datetime ? ` – ${formatTime(ev.end_datetime)}${t('calendar.timeSuffix') ? ' ' + t('calendar.timeSuffix') : ''}`.trim() : '');
 
-  const displayColor = ev.color || ev.cal_color;
+  const displayBg     = resolveEventBackground(ev);
+  const displayColor  = resolveEventColor(ev);
+  const calLabelColor = ev.cal_color || ev.color || displayColor;
   popup.insertAdjacentHTML('beforeend', `
-    <div class="event-popup__color-bar" style="background-color:${esc(displayColor)};"></div>
+    <div class="event-popup__color-bar" style="background:${esc(displayBg)};"></div>
     <div class="event-popup__title">${eventIconHtml(ev.icon)}<span>${esc(ev.title)}</span></div>
     <div class="event-popup__meta">
-      ${ev.cal_name ? `<div><span class="event-cal-label" style="--cal-color:${esc(displayColor)}">${esc(ev.cal_name)}</span></div>` : ''}
+      ${ev.cal_name ? `<div><span class="event-cal-label" style="--cal-color:${esc(calLabelColor)}">${esc(ev.cal_name)}</span></div>` : ''}
       <div class="calendar-meta-item">${calendarMetaIconHtml('clock')}<span>${esc(timeStr)}</span></div>
       ${ev.location ? `<div class="calendar-meta-item">${calendarMetaIconHtml('map-pin')}<span>${esc(fmtLocation(ev.location))}</span></div>` : ''}
       ${ev.description ? `<div>${esc(truncateDescription(ev.description, 500))}</div>` : ''}
@@ -1700,6 +1752,29 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
       bindRRuleEvents(panel, 'event');
       bindUserMultiSelect(panel, 'cal_assigned');
 
+      // Color-Picker ausgrauen wenn Assignees gesetzt sind (Avatar-Farbe hat Vorrang)
+      function syncColorPickerState() {
+        const hasAssignees = getSelectedUserIds(panel, 'cal_assigned').length > 0;
+        const group  = panel.querySelector('.js-color-picker-group');
+        const hint   = panel.querySelector('#color-picker-assignee-hint');
+        const picker = panel.querySelector('#event-color-picker');
+        if (group)  group.classList.toggle('color-picker--disabled', hasAssignees);
+        if (hint)   hint.hidden = !hasAssignees;
+        if (picker) {
+          picker.setAttribute('aria-disabled', hasAssignees ? 'true' : 'false');
+          picker.querySelectorAll('.color-swatch').forEach((s) => {
+            if (hasAssignees) {
+              s.setAttribute('tabindex', '-1');
+            } else {
+              s.setAttribute('tabindex', s.classList.contains('color-swatch--active') ? '0' : '-1');
+            }
+          });
+        }
+      }
+      const msWidget = panel.querySelector('.user-ms[data-ms-name="cal_assigned"]');
+      msWidget?.addEventListener('change', syncColorPickerState);
+      syncColorPickerState();
+
       const selectedColor = isEdit ? (event?.color || EVENT_COLORS[0]) : EVENT_COLORS[0];
 
       // Farb-Auswahl: Auswahl + ARIA + Keyboard (Roving Tabindex)
@@ -1967,9 +2042,9 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
       ${renderUserMultiSelect(state.users, selectedUserIds, 'cal_assigned', 'calendar.assignedLabel')}
     </div>
 
-    <div class="form-group">
+    <div class="form-group js-color-picker-group">
       <label class="form-label" id="event-color-label">${t('calendar.colorLabel')}</label>
-      <div class="color-picker" role="radiogroup" aria-labelledby="event-color-label">
+      <div class="color-picker" id="event-color-picker" role="radiogroup" aria-labelledby="event-color-label">
         ${EVENT_COLORS.map((c, i) => `
           <div class="color-swatch" data-color="${c}" style="background-color:${c};"
                role="radio"
@@ -1978,6 +2053,7 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
                aria-label="${EVENT_COLOR_NAMES()[c] ?? c}"></div>
         `).join('')}
       </div>
+      <p class="form-hint color-picker__assignee-hint" id="color-picker-assignee-hint" hidden>${t('calendar.colorOverriddenByAssignee')}</p>
     </div>
 
     <div class="form-group">

@@ -371,6 +371,7 @@
     "assignedLabel": "Assegnato a",
     "assignedNobody": "- Nessuno -",
     "colorLabel": "Colore {{color}}",
+    "colorOverriddenByAssignee": "Il colore viene sostituito dagli utenti assegnati",
     "descriptionLabel": "Descrizione",
     "descriptionPlaceholder": "Opzionale…",
     "popupEdit": "Modifica",

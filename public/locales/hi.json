@@ -371,6 +371,7 @@
     "assignedLabel": "सौंपा गया",
     "assignedNobody": "- कोई नहीं -",
     "colorLabel": "रंग {{color}}",
+    "colorOverriddenByAssignee": "रंग असाइन किए गए उपयोगकर्ताओं द्वारा ओवरराइड किया गया है",
     "descriptionLabel": "विवरण",
     "descriptionPlaceholder": "वैकल्पिक…",
     "popupEdit": "संपादित करें",

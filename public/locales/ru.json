@@ -371,6 +371,7 @@
     "assignedLabel": "Назначено",
     "assignedNobody": "- Никому -",
     "colorLabel": "Цвет {{color}}",
+    "colorOverriddenByAssignee": "Цвет переопределяется назначенными пользователями",
     "descriptionLabel": "Описание",
     "descriptionPlaceholder": "Необязательно…",
     "popupEdit": "Редактировать",

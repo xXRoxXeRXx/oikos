@@ -371,6 +371,7 @@
     "assignedLabel": "Přiřazeno",
     "assignedNobody": "- Nikdo -",
     "colorLabel": "Barva",
+    "colorOverriddenByAssignee": "Barva je přepsána přiřazenými uživateli",
     "descriptionLabel": "Popis",
     "descriptionPlaceholder": "Volitelné…",
     "popupEdit": "Upravit",

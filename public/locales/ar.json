@@ -371,6 +371,7 @@
     "assignedLabel": "مسند إلى",
     "assignedNobody": "- لا أحد -",
     "colorLabel": "اللون {{color}}",
+    "colorOverriddenByAssignee": "يتم تجاوز اللون بواسطة المستخدمين المعينين",
     "descriptionLabel": "الوصف",
     "descriptionPlaceholder": "اختياري…",
     "popupEdit": "تعديل",

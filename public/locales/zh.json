@@ -371,6 +371,7 @@
     "assignedLabel": "分配给",
     "assignedNobody": "- 无人 -",
     "colorLabel": "颜色 {{color}}",
+    "colorOverriddenByAssignee": "颜色被指定用户覆盖",
     "descriptionLabel": "描述",
     "descriptionPlaceholder": "可选…",
     "popupEdit": "编辑",

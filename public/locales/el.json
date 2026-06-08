@@ -371,6 +371,7 @@
     "assignedLabel": "Ανατεθειμένο σε",
     "assignedNobody": "- Κανέναν -",
     "colorLabel": "Χρώμα {{color}}",
+    "colorOverriddenByAssignee": "Το χρώμα παρακάμπτεται από τους ανατεθειμένους χρήστες",
     "descriptionLabel": "Περιγραφή",
     "descriptionPlaceholder": "Προαιρετικό…",
     "popupEdit": "Επεξεργασία",
