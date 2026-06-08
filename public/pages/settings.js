@@ -950,6 +950,72 @@ export async function render(container, { user }) {
             </div>
           </div>
 
+          <!-- WebDAV Backup Target -->
+          <div class="settings-card settings-card--backup" id="backup-webdav-card">
+            <h3 class="settings-card__title">
+              <i data-lucide="cloud-upload" aria-hidden="true" class="settings-card__title-icon"></i>
+              ${t('settings.backupWebdavTitle')}
+            </h3>
+            <p class="form-hint">${t('settings.backupWebdavHint')}</p>
+            <form class="settings-form" id="backup-webdav-form" novalidate>
+              <div class="settings-form-row settings-form-row--toggle">
+                <label class="settings-toggle-label" for="webdav-enabled">
+                  ${t('settings.backupWebdavEnabled')}
+                </label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="webdav-enabled" name="enabled" />
+                  <span class="toggle-switch__track" aria-hidden="true"></span>
+                </label>
+              </div>
+              <div class="settings-form-row">
+                <label class="settings-label" for="webdav-url">${t('settings.backupWebdavUrl')}</label>
+                <input class="settings-input" type="url" id="webdav-url" name="url"
+                  placeholder="${t('settings.backupWebdavUrlPlaceholder')}" autocomplete="off" />
+              </div>
+              <div class="settings-form-row">
+                <label class="settings-label" for="webdav-username">${t('settings.backupWebdavUsername')}</label>
+                <input class="settings-input" type="text" id="webdav-username" name="username"
+                  autocomplete="username" />
+              </div>
+              <div class="settings-form-row">
+                <label class="settings-label" for="webdav-password">${t('settings.backupWebdavPassword')}</label>
+                <div class="settings-input-wrap settings-input-wrap--reveal">
+                  <input class="settings-input" type="password" id="webdav-password" name="password"
+                    autocomplete="current-password"
+                    placeholder="${t('settings.backupWebdavPasswordPlaceholder')}" />
+                  <button type="button" class="btn btn--icon btn--ghost settings-reveal-btn"
+                    data-reveal-target="webdav-password" aria-label="${t('common.togglePasswordVisibility')}">
+                    <i data-lucide="eye" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="settings-form-row">
+                <label class="settings-label" for="webdav-path">${t('settings.backupWebdavPath')}</label>
+                <input class="settings-input" type="text" id="webdav-path" name="remotePath"
+                  placeholder="${t('settings.backupWebdavPathPlaceholder')}" />
+              </div>
+              <div class="settings-form-row">
+                <label class="settings-label" for="webdav-keep">${t('settings.backupWebdavKeep')}</label>
+                <input class="settings-input settings-input--narrow" type="number"
+                  id="webdav-keep" name="keep" min="1" max="99" />
+              </div>
+              <div id="webdav-test-result" class="form-hint" hidden></div>
+              <div class="settings-form-actions">
+                <button type="button" class="btn btn--secondary" id="webdav-test-btn">
+                  <i data-lucide="plug" aria-hidden="true"></i>
+                  ${t('settings.backupWebdavTestBtn')}
+                </button>
+                <button type="submit" class="btn btn--primary" id="webdav-save-btn">
+                  ${t('settings.backupWebdavSaveBtn')}
+                </button>
+              </div>
+            </form>
+
+            <div class="settings-info-grid settings-info-grid--top-gap" id="backup-webdav-status">
+              <!-- Populated by JavaScript -->
+            </div>
+          </div>
+
           <div class="settings-card settings-card--backup">
             <h3 class="settings-card__title">${t('settings.backupCliTitle')}</h3>
             <p class="form-hint">${t('settings.backupCliHint')}</p>
@@ -2685,8 +2751,7 @@ function bindApiTokenEvents(container, initialTokens) {
   });
 }
 
-async function loadBackupSchedulerStatus(container) {
-  const infoContainer = container.querySelector('#backup-scheduler-info');
+async function loadBackupSchedulerStatus(container) {  const infoContainer = container.querySelector('#backup-scheduler-info');
   if (!infoContainer) return;
 
   try {
@@ -2758,9 +2823,197 @@ async function loadBackupSchedulerStatus(container) {
   }
 }
 
+// ─── WebDAV Backup ────────────────────────────────────────────────────────────
+
+async function loadWebdavConfig(container) {
+  const form       = container.querySelector('#backup-webdav-form');
+  const statusGrid = container.querySelector('#backup-webdav-status');
+  if (!form) return;
+
+  try {
+    const res = await api.get('/backup/webdav/config');
+    const d   = res.data ?? {};
+
+    const setVal = (id, val) => {
+      const el = form.querySelector(`#${id}`);
+      if (!el) return;
+      if (el.type === 'checkbox') el.checked = Boolean(val);
+      else el.value = val ?? '';
+    };
+
+    setVal('webdav-enabled',  d.enabled);
+    setVal('webdav-url',      d.envControlled ? d.url ?? '' : d.url ?? '');
+    setVal('webdav-username', d.username ?? '');
+    setVal('webdav-password', d.password ?? '');   // will show '****' if set
+    setVal('webdav-path',     d.remotePath ?? '/oikos-backups/');
+    setVal('webdav-keep',     d.keep ?? 7);
+
+    // Mark fields read-only when controlled by env vars
+    if (d.envControlled) {
+      ['webdav-url', 'webdav-username', 'webdav-password', 'webdav-path', 'webdav-keep'].forEach((id) => {
+        const el = form.querySelector(`#${id}`);
+        if (el) {
+          el.readOnly = true;
+          el.classList.add('settings-input--readonly');
+        }
+      });
+      const hint = form.querySelector('#webdav-test-result');
+      if (hint) {
+        hint.hidden   = false;
+        hint.textContent = t('settings.backupWebdavEnvHint');
+        hint.className = 'form-hint';
+      }
+    }
+
+    // Render status grid
+    renderWebdavStatus(statusGrid, d);
+
+    if (window.lucide) window.lucide.createIcons({ el: form });
+  } catch (err) {
+    console.error('Failed to load WebDAV config:', err);
+  }
+}
+
+function renderWebdavStatus(grid, d) {
+  if (!grid) return;
+  if (!d.configured) { grid.replaceChildren(); return; }
+
+  const lastUploadText = d.lastUpload
+    ? t('settings.backupWebdavLastUpload', { date: d.lastUpload })
+    : t('settings.backupWebdavNeverUploaded');
+
+  const errorRow = d.lastError
+    ? `<div class="settings-info-row settings-info-row--danger">
+         <span class="settings-info-label">${t('settings.backupWebdavLastError')}</span>
+         <span class="settings-info-value settings-info-value--danger">${esc(d.lastError)}</span>
+       </div>`
+    : '';
+
+  grid.replaceChildren();
+  grid.insertAdjacentHTML('beforeend', `
+    <div class="settings-info-row">
+      <span class="settings-info-label">${t('settings.backupWebdavLastUpload')}</span>
+      <span class="settings-info-value">${esc(lastUploadText)}</span>
+    </div>
+    ${errorRow}
+    <div class="settings-form-actions">
+      <button class="btn btn--secondary" id="webdav-trigger-btn">
+        <i data-lucide="upload-cloud" aria-hidden="true"></i>
+        ${t('settings.backupWebdavTriggerBtn')}
+      </button>
+    </div>
+  `);
+
+  if (window.lucide) window.lucide.createIcons({ el: grid });
+
+  const triggerBtn = grid.querySelector('#webdav-trigger-btn');
+  if (triggerBtn) {
+    triggerBtn.addEventListener('click', async () => {
+      triggerBtn.disabled = true;
+      const origHtml = triggerBtn.innerHTML;
+      triggerBtn.textContent = t('settings.backupWebdavTriggering');
+      try {
+        await api.post('/backup/webdav/trigger');
+        window.oikos?.showToast(t('settings.backupWebdavTriggeredToast'), 'success');
+        loadWebdavConfig(triggerBtn.closest('.settings-tab-panel') ?? document);
+      } catch (err) {
+        window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
+        triggerBtn.disabled = false;
+        triggerBtn.innerHTML = origHtml;
+        if (window.lucide) window.lucide.createIcons({ el: triggerBtn });
+      }
+    });
+  }
+}
+
+function bindWebdavBackupEvents(container) {
+  const form      = container.querySelector('#backup-webdav-form');
+  const testBtn   = container.querySelector('#webdav-test-btn');
+  const resultEl  = container.querySelector('#webdav-test-result');
+  if (!form) return;
+
+  loadWebdavConfig(container);
+
+  // Password reveal toggle
+  form.querySelectorAll('[data-reveal-target]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const input = form.querySelector(`#${btn.dataset.revealTarget}`);
+      if (!input) return;
+      const isText = input.type === 'text';
+      input.type = isText ? 'password' : 'text';
+      const icon = btn.querySelector('[data-lucide]');
+      if (icon) {
+        icon.setAttribute('data-lucide', isText ? 'eye' : 'eye-off');
+        if (window.lucide) window.lucide.createIcons({ el: btn });
+      }
+    });
+  });
+
+  // Connection test
+  testBtn?.addEventListener('click', async () => {
+    testBtn.disabled = true;
+    if (resultEl) { resultEl.hidden = false; resultEl.textContent = '…'; resultEl.className = 'form-hint'; }
+
+    const overrides = {};
+    const url      = form.querySelector('#webdav-url')?.value?.trim();
+    const username = form.querySelector('#webdav-username')?.value?.trim();
+    const password = form.querySelector('#webdav-password')?.value;
+    const path     = form.querySelector('#webdav-path')?.value?.trim();
+
+    if (url)                             overrides.url        = url;
+    if (username)                        overrides.username   = username;
+    if (password && password !== '****') overrides.password   = password;
+    if (path)                            overrides.remotePath = path;
+
+    try {
+      const res = await api.post('/backup/webdav/test', overrides);
+      if (resultEl) {
+        resultEl.textContent = t('settings.backupWebdavTestSuccess', { files: res.data?.files ?? 0 });
+        resultEl.className   = 'form-hint form-hint--success';
+      }
+    } catch (err) {
+      if (resultEl) {
+        resultEl.textContent = t('settings.backupWebdavTestFailed', { error: err.message });
+        resultEl.className   = 'form-hint form-hint--error';
+      }
+    } finally {
+      testBtn.disabled = false;
+    }
+  });
+
+  // Save form
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const saveBtn = form.querySelector('#webdav-save-btn');
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '…'; }
+
+    const password = form.querySelector('#webdav-password')?.value;
+    const payload  = {
+      enabled:    form.querySelector('#webdav-enabled')?.checked ?? false,
+      url:        form.querySelector('#webdav-url')?.value?.trim()     || null,
+      username:   form.querySelector('#webdav-username')?.value?.trim() || null,
+      remotePath: form.querySelector('#webdav-path')?.value?.trim()    || '/oikos-backups/',
+      keep:       Number(form.querySelector('#webdav-keep')?.value)    || 7,
+    };
+    // Only send password if the user changed it (not the masked placeholder)
+    if (password && password !== '****') payload.password = password;
+
+    try {
+      await api.put('/backup/webdav/config', payload);
+      window.oikos?.showToast(t('settings.backupWebdavSaved'), 'success');
+      loadWebdavConfig(container);
+    } catch (err) {
+      window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
+    } finally {
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = t('settings.backupWebdavSaveBtn'); }
+    }
+  });
+}
+
 function bindBackupEvents(container) {
   // Scheduler-Status laden und anzeigen
   loadBackupSchedulerStatus(container);
+  bindWebdavBackupEvents(container);
 
   const form = container.querySelector('#backup-restore-form');
   const fileInput = container.querySelector('#backup-restore-file');
