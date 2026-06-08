@@ -1093,7 +1093,7 @@
     "backupWebdavPassword": "Passwort",
     "backupWebdavPasswordPlaceholder": "Eingeben, um gespeichertes Passwort zu ändern",
     "backupWebdavPath": "Remote-Pfad",
-    "backupWebdavPathPlaceholder": "/oikos-backups/",
+    "backupWebdavPathPlaceholder": "/oikos/backups/",
     "backupWebdavKeep": "Remote-Backups behalten",
     "backupWebdavTestBtn": "Verbindung testen",
     "backupWebdavSaveBtn": "Speichern",
