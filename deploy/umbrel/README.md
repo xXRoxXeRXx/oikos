@@ -20,7 +20,7 @@ so any review tweaks (port, gallery, category) are preserved. It needs the
 
 Manual fallback (if you ever need it): run the workflow via `workflow_dispatch`,
 or get the digest with
-`docker buildx imagetools inspect ghcr.io/ulsklyc/oikos:<version>` (top-level
+`docker buildx imagetools inspect ghcr.io/ulsklyc/yuvomi:<version>` (top-level
 `Digest:`) and bump `version`/`@sha256:` in a fork PR by hand.
 
 ## Config notes (why the compose looks like this)

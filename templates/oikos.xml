@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>Yuvomi</Name>
-  <Repository>ghcr.io/ulsklyc/oikos:latest</Repository>
+  <Repository>ghcr.io/ulsklyc/yuvomi:latest</Repository>
   <Registry>https://github.com/ulsklyc/oikos/pkgs/container/oikos</Registry>
   <Network>bridge</Network>
   <MyIP/>
