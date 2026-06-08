@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "Open-Meteo aktiveras vid sparning och OWM ignoreras.",
     "weatherLocateBtn": "Identifiera plats",
     "weatherLocateSuccess": "Plats identifierad.",
-    "weatherLocateUnsupported": "Geolokalisering stöds inte av din webbläsare."
+    "weatherLocateUnsupported": "Geolokalisering stöds inte av din webbläsare.",
+    "cropDialogTitle": "Beskär bild",
+    "cropConfirm": "Beskär",
+    "cropZoomLabel": "Zoom"
   },
   "login": {
     "tagline": "Familjeplanering. Säker. Sekretessvänlig. Öppen källkod.",

@@ -152,46 +152,30 @@ function bindAvatarPicker(container, prefix) {
   });
 }
 
-function readImageAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) return resolve(undefined);
-    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
-      return reject(new Error(t('settings.profilePictureTypeError')));
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      return reject(new Error(t('settings.profilePictureFileTooLarge')));
-    }
+async function readImageAsDataUrl(file) {
+  if (!file) return undefined;
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+    throw new Error(t('settings.profilePictureTypeError'));
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error(t('settings.profilePictureFileTooLarge'));
+  }
 
+  const dataUrl = await new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-      try {
-        const maxSize = 512;
-        const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
-        const width = Math.max(1, Math.round(img.width * scale));
-        const height = Math.max(1, Math.round(img.height * scale));
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.86);
-        if (dataUrl.length > MAX_AVATAR_DATA_LENGTH) {
-          reject(new Error(t('settings.profilePictureTooLarge')));
-        } else {
-          resolve(dataUrl);
-        }
-      } catch (err) {
-        reject(err);
-      }
-      };
-      img.onerror = () => reject(new Error(t('settings.profilePictureReadError')));
-      img.src = reader.result;
-    };
+    reader.onload = () => resolve(String(reader.result || ''));
     reader.onerror = () => reject(new Error(t('settings.profilePictureReadError')));
     reader.readAsDataURL(file);
   });
+
+  const { openCropDialog } = await import('/utils/avatar-crop.js');
+  const cropped = await openCropDialog(dataUrl);
+  if (cropped === null) return undefined;
+
+  if (cropped.length > MAX_AVATAR_DATA_LENGTH) {
+    throw new Error(t('settings.profilePictureTooLarge'));
+  }
+  return cropped;
 }
 
 /**
@@ -1997,6 +1981,8 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
             avatar_color: container.querySelector('#profile-avatar-color')?.value || user?.avatar_color,
             avatar_data: avatarData,
           });
+        } else {
+          profileAvatarFile.value = '';
         }
       } catch (err) {
         profileAvatarFile.value = '';
@@ -2590,6 +2576,8 @@ function openEditMemberModal(member, currentUser, users, container) {
               avatar_color: panel.querySelector('#edit-member-avatar-color')?.value || member.avatar_color,
               avatar_data: avatarData,
             });
+          } else {
+            fileInput.value = '';
           }
         } catch (err) {
           fileInput.value = '';

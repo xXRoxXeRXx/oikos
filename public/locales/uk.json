@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "Open-Meteo буде активовано при збереженні, OWM ігноруватиметься.",
     "weatherLocateBtn": "Визначити місцезнаходження",
     "weatherLocateSuccess": "Місцезнаходження успішно визначено.",
-    "weatherLocateUnsupported": "Ваш браузер не підтримує геолокацію."
+    "weatherLocateUnsupported": "Ваш браузер не підтримує геолокацію.",
+    "cropDialogTitle": "Обрізати зображення",
+    "cropConfirm": "Обрізати",
+    "cropZoomLabel": "Масштаб"
   },
   "login": {
     "tagline": "Планування для родини. Безпечно. Конфіденційно. Відкритий код.",

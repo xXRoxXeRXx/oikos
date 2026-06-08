@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "Open-Meteo bude aktivován při uložení a OWM bude ignorován.",
     "weatherLocateBtn": "Zjistit polohu",
     "weatherLocateSuccess": "Poloha úspěšně zjištěna.",
-    "weatherLocateUnsupported": "Geolokalizace není vaším prohlížečem podporována."
+    "weatherLocateUnsupported": "Geolokalizace není vaším prohlížečem podporována.",
+    "cropDialogTitle": "Oříznout obrázek",
+    "cropConfirm": "Oříznout",
+    "cropZoomLabel": "Přiblížení"
   },
   "login": {
     "tagline": "Rodinné plánování. Bezpečné. Soukromé. Open Source.",

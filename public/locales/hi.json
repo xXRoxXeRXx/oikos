@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "सहेजने पर Open-Meteo सक्रिय हो जाएगा और OWM अनदेखा किया जाएगा।",
     "weatherLocateBtn": "स्थान पता करें",
     "weatherLocateSuccess": "स्थान सफलतापूर्वक पता चला।",
-    "weatherLocateUnsupported": "आपका ब्राउज़र जियोलोकेशन का समर्थन नहीं करता।"
+    "weatherLocateUnsupported": "आपका ब्राउज़र जियोलोकेशन का समर्थन नहीं करता।",
+    "cropDialogTitle": "छवि क्रॉप करें",
+    "cropConfirm": "क्रॉप करें",
+    "cropZoomLabel": "ज़ूम"
   },
   "login": {
     "tagline": "पारिवारिक योजना। सुरक्षित। गोपनीयता-अनुकूल। ओपन सोर्स।",

@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "保存后将激活Open-Meteo并忽略OWM。",
     "weatherLocateBtn": "获取当前位置",
     "weatherLocateSuccess": "位置获取成功。",
-    "weatherLocateUnsupported": "您的浏览器不支持地理定位。"
+    "weatherLocateUnsupported": "您的浏览器不支持地理定位。",
+    "cropDialogTitle": "裁剪图片",
+    "cropConfirm": "裁剪",
+    "cropZoomLabel": "缩放"
   },
   "login": {
     "tagline": "家庭规划。安全。注重隐私。开源。",

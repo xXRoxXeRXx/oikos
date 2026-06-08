@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "Open-Meteo se activará al guardar y se ignorará OWM.",
     "weatherLocateBtn": "Detectar ubicación",
     "weatherLocateSuccess": "Ubicación detectada.",
-    "weatherLocateUnsupported": "La geolocalización no es compatible con su navegador."
+    "weatherLocateUnsupported": "La geolocalización no es compatible con su navegador.",
+    "cropDialogTitle": "Recortar imagen",
+    "cropConfirm": "Recortar",
+    "cropZoomLabel": "Zoom"
   },
   "login": {
     "tagline": "Planificación familiar. Segura. Privada. Código abierto.",

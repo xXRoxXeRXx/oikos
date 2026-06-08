@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "Open-Meteo will be activated on save and OWM will be ignored.",
     "weatherLocateBtn": "Detect location",
     "weatherLocateSuccess": "Location detected.",
-    "weatherLocateUnsupported": "Geolocation is not supported by your browser."
+    "weatherLocateUnsupported": "Geolocation is not supported by your browser.",
+    "cropDialogTitle": "Crop image",
+    "cropConfirm": "Crop",
+    "cropZoomLabel": "Zoom"
   },
   "login": {
     "tagline": "Family planning. Secure. Privacy-friendly. Open source.",

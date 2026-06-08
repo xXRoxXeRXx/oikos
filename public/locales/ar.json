@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "سيتم تفعيل Open-Meteo عند الحفظ وسيتم تجاهل OWM.",
     "weatherLocateBtn": "تحديد الموقع",
     "weatherLocateSuccess": "تم تحديد الموقع بنجاح.",
-    "weatherLocateUnsupported": "المتصفح لا يدعم تحديد الموقع الجغرافي."
+    "weatherLocateUnsupported": "المتصفح لا يدعم تحديد الموقع الجغرافي.",
+    "cropDialogTitle": "اقتصاص الصورة",
+    "cropConfirm": "اقتصاص",
+    "cropZoomLabel": "تكبير"
   },
   "login": {
     "tagline": "تخطيط عائلي. آمن. يحترم الخصوصية. مفتوح المصدر.",

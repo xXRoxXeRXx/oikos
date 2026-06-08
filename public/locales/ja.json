@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "保存するとOpen-Meteoが有効化され、OWMは無視されます。",
     "weatherLocateBtn": "現在地を取得",
     "weatherLocateSuccess": "現在地を取得しました。",
-    "weatherLocateUnsupported": "お使いのブラウザは位置情報に対応していません。"
+    "weatherLocateUnsupported": "お使いのブラウザは位置情報に対応していません。",
+    "cropDialogTitle": "画像をトリミング",
+    "cropConfirm": "トリミング",
+    "cropZoomLabel": "ズーム"
   },
   "login": {
     "tagline": "家族計画。安全。プライバシー重視。オープンソース。",

@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "Open-Meteo kaydedildiğinde etkinleştirilecek ve OWM yoksayılacak.",
     "weatherLocateBtn": "Konumu tespit et",
     "weatherLocateSuccess": "Konum tespit edildi.",
-    "weatherLocateUnsupported": "Tarayıcınız coğrafi konum belirlemeyi desteklemiyor."
+    "weatherLocateUnsupported": "Tarayıcınız coğrafi konum belirlemeyi desteklemiyor.",
+    "cropDialogTitle": "Resmi kırp",
+    "cropConfirm": "Kırp",
+    "cropZoomLabel": "Zoom"
   },
   "login": {
     "tagline": "Aile planlaması. Güvenli. Gizlilik dostu. Açık kaynak.",

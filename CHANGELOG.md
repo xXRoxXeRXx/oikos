@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.65.28] - 2026-06-08
+
+### Added
+- Avatar upload now shows an interactive **crop dialog**: drag to pan, zoom with the slider or mouse wheel, then confirm to save a 256 × 256 px square crop. Works for profile pictures and housekeeping staff avatars.
+
 ## [0.65.27] - 2026-06-08
 
 ### Added

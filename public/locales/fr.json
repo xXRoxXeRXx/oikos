@@ -1218,7 +1218,10 @@
     "weatherSwitchHint": "Open-Meteo sera activé à l'enregistrement et OWM ignoré.",
     "weatherLocateBtn": "Détecter ma position",
     "weatherLocateSuccess": "Position détectée.",
-    "weatherLocateUnsupported": "La géolocalisation n'est pas prise en charge par votre navigateur."
+    "weatherLocateUnsupported": "La géolocalisation n'est pas prise en charge par votre navigateur.",
+    "cropDialogTitle": "Recadrer l'image",
+    "cropConfirm": "Recadrer",
+    "cropZoomLabel": "Zoom"
   },
   "login": {
     "tagline": "Planification familiale. Sécurisée. Respectueuse de la vie privée. Open source.",
