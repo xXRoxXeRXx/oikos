@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.67.0] - 2026-06-09
+
+### Added
+- Public & school holidays calendar layer powered by the free [OpenHolidays API](https://openholidaysapi.org) (no API key required). Under **Settings → Calendar**, an admin picks a country and optional state/region, sets the layer colors, and syncs; holidays are then cached locally and shown as a read-only overlay across the month, week, day, and agenda views. Each layer (public holidays / school holidays) has its own show/hide toggle in the calendar toolbar. The auto-sync scheduler keeps the cache current across the previous, current, and next two years, and outbound requests carry only the country/region code — no household data leaves the server.
+
+### Fixed
+- Calendar month view now loads events, tasks, and holidays for the leading days of the grid (the trailing days of the previous month shown in the first week), which were previously outside the fetched date range.
+
 ## [0.66.6] - 2026-06-09
 
 ### Fixed
