@@ -692,7 +692,7 @@ function renderAppShell(container) {
     if (!ind) return;
     const cr = sidebarItems.getBoundingClientRect();
     const ir = item.getBoundingClientRect();
-    ind.style.transform = `translateY(${ir.top - cr.top + sidebarItems.scrollTop}px)`;
+    ind.style.transform = `translateY(${ir.top - cr.top + sidebarItems.scrollTop + 2}px)`;
     ind.style.opacity = '0.5';
   });
   sidebarItems.addEventListener('mouseleave', () => positionSidebarIndicator());
@@ -1519,7 +1519,7 @@ function positionSidebarIndicator() {
   }
   const cr = container.getBoundingClientRect();
   const ar = active.getBoundingClientRect();
-  indicator.style.transform = `translateY(${ar.top - cr.top + container.scrollTop}px)`;
+  indicator.style.transform = `translateY(${ar.top - cr.top + container.scrollTop + 2}px)`;
   indicator.style.opacity = '';
 }
 
