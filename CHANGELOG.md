@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.67.1] - 2026-06-09
+
+### Changed
+- Internal: added an automated test suite for the holidays service (`test:holidays`) covering cache lookup with date-overlap, layer-toggle and subdivision filtering, sync caching/idempotency, and country/region listing against a mocked OpenHolidays API. No user-facing or runtime behavior change.
+
 ## [0.67.0] - 2026-06-09
 
 ### Added
