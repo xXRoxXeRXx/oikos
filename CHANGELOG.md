@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.68.3] - 2026-06-09
+
+### Changed
+- **Dashboard**: assignee avatars in the calendar widget's event rows are now 28px, matching the tasks widget and the app-wide default. They were previously 26px — a slight outlier — so the two side-by-side dashboard widgets now present assignees at a consistent size with better visual presence.
+
 ## [0.68.2] - 2026-06-09
 
 ### Fixed
