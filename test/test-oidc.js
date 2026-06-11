@@ -255,14 +255,26 @@ test('verknüpft NICHT bei unverifizierter E-Mail (Takeover-Schutz)', () => {
   assert(local.oidc_sub === null, 'Unverifizierte E-Mail darf keinen Account übernehmen');
 });
 
-test('verknüpft bestehenden Account wenn email_verified fehlt (Provider sendet ihn nicht)', () => {
+test('verknüpft NICHT wenn email_verified fehlt (Standard — sicherer Default)', () => {
+  delete process.env.OIDC_TRUST_EMAIL_WITHOUT_VERIFIED_CLAIM;
   const db = buildOidcTestDb();
   addLocalUserWithEmail(db, 'charlie', 'charlie@example.com');
   const userinfo = { sub: 'link-sub-005', email: 'charlie@example.com' }; // kein email_verified
+  findOrCreateOidcUser(db, userinfo);
+  const count = db.prepare('SELECT count(*) as n FROM users').get();
+  assert(count.n === 2, 'Fehlendes email_verified darf ohne Opt-in nicht verknüpfen');
+});
+
+test('verknüpft wenn email_verified fehlt und OIDC_TRUST_EMAIL_WITHOUT_VERIFIED_CLAIM=true', () => {
+  process.env.OIDC_TRUST_EMAIL_WITHOUT_VERIFIED_CLAIM = 'true';
+  const db = buildOidcTestDb();
+  addLocalUserWithEmail(db, 'charlie', 'charlie@example.com');
+  const userinfo = { sub: 'link-sub-005b', email: 'charlie@example.com' }; // kein email_verified
   const user = findOrCreateOidcUser(db, userinfo);
   const count = db.prepare('SELECT count(*) as n FROM users').get();
-  assert(count.n === 1, 'Fehlendes email_verified soll bestehenden Account verknüpfen');
-  assert(user.oidc_sub === 'link-sub-005', `oidc_sub nicht gesetzt: ${user.oidc_sub}`);
+  assert(count.n === 1, 'Mit Opt-in soll fehlender Claim verknüpfen');
+  assert(user.oidc_sub === 'link-sub-005b', `oidc_sub nicht gesetzt: ${user.oidc_sub}`);
+  delete process.env.OIDC_TRUST_EMAIL_WITHOUT_VERIFIED_CLAIM;
 });
 
 test('verknüpft NICHT bei mehrdeutiger E-Mail (mehrere Treffer)', () => {

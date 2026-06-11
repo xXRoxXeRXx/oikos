@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.71.12] - 2026-06-11
+
+### Security
+- **OIDC account linking (revert v0.71.11)**: the relaxed `email_verified !== false` check introduced in v0.71.11 is replaced with a strict opt-in. The default is restored to `email_verified === true` required; the new `OIDC_TRUST_EMAIL_WITHOUT_VERIFIED_CLAIM=true` env var lets admins opt in explicitly for IdPs that omit the claim but only issue verified addresses.
+
 ## [0.71.11] - 2026-06-11
 
-### Fixed
-- **OIDC account linking**: existing local accounts are now correctly linked to an SSO identity when the IdP omits the `email_verified` claim. Previously only an explicit `true` triggered linking; now linking proceeds unless the provider explicitly sends `false`, which is the actual account-takeover guard.
+### Added
+- **`OIDC_TRUST_EMAIL_WITHOUT_VERIFIED_CLAIM`** env var (opt-in): set to `true` to allow account linking when the IdP omits the `email_verified` claim entirely. The default remains strict (`email_verified: true` required) to prevent account-takeover via unverified addresses. Only enable this for IdPs fully under your control that never issue accounts with unverified email addresses (e.g. older Authentik deployments without an explicit `email_verified` property mapping).
 
 ## [0.71.10] - 2026-06-11
 
