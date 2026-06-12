@@ -12,6 +12,7 @@
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'node:fs/promises';
+import { mkdirSync } from 'node:fs';
 import { createLogger } from './logger.js';
 
 const log = createLogger('DB');
@@ -32,6 +33,14 @@ let db;
  */
 function init() {
   if (db) return db;
+  if (!path.isAbsolute(DB_PATH)) {
+    log.warn(
+      `DB_PATH "${DB_PATH}" is a relative path — inside Docker this resolves to ` +
+      `"${path.resolve(DB_PATH)}", which is NOT the mounted volume. ` +
+      `Data will be lost on container restart. Use an absolute path, e.g. DB_PATH=/data/oikos.db`
+    );
+  }
+  mkdirSync(path.dirname(DB_PATH), { recursive: true });
   db = new Database(DB_PATH);
 
   applyEncryptionKey(db);

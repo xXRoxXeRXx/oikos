@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.71.28] - 2026-06-12
+
+### Fixed
+- **Relative `DB_PATH` no longer crashes with a cryptic error**: `init()` now creates the database directory before opening the connection (consistent with the existing restore path) and logs a clear warning when `DB_PATH` is relative, explaining that data will not survive container restarts and pointing to the correct absolute-path form (`/data/oikos.db`).
+
 ## [0.71.27] - 2026-06-12
 
 ### Fixed
