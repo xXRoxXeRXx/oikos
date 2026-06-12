@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.71.27] - 2026-06-12
+
+### Fixed
+- **Website version badge synchronized**: the GitHub Pages landing page now shows the current release in both the proof bar and footer instead of the stale `v0.71.21` label.
+
 ## [0.71.26] - 2026-06-12
 
 ### Changed
