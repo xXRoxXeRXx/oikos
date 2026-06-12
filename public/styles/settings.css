@@ -57,6 +57,81 @@
   color: var(--color-accent);
 }
 
+/* --------------------------------------------------------
+   Akkordeon-Navigation (Desktop, ab 2 Domänen)
+   Single-Open: die aktive Domäne ist offen, die übrigen kollabieren auf ihre
+   Kopfzeile. Die Höhe animiert per grid-template-rows 0fr→1fr (kein JS-Messen).
+   -------------------------------------------------------- */
+
+.settings-shell__navigation--collapsible .settings-shell__navigation-group + .settings-shell__navigation-group {
+  margin-top: var(--space-1);
+}
+
+.settings-shell__navigation--collapsible .settings-shell__navigation-heading {
+  margin: 0;
+}
+
+.settings-shell__navigation-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--target-md);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  /* Typo (Größe/Tracking/Versal) kommt aus der Rollenebene (typography.css);
+     der Button erbt nur die Schriftfamilie, die er sonst per UA-Default verlöre. */
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.settings-shell__navigation-toggle:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.settings-shell__navigation-group--active .settings-shell__navigation-toggle {
+  color: var(--color-accent);
+}
+
+.settings-shell__navigation-domain-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.settings-shell__navigation-chevron {
+  width: var(--space-4);
+  height: var(--space-4);
+  flex: 0 0 auto;
+  color: var(--color-text-tertiary);
+  transition: transform var(--transition-base);
+}
+
+.settings-shell__navigation-toggle[aria-expanded='true'] .settings-shell__navigation-chevron {
+  transform: rotate(180deg);
+}
+
+.settings-shell__navigation-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--transition-base);
+}
+
+.settings-shell__navigation-group--expanded .settings-shell__navigation-panel {
+  grid-template-rows: 1fr;
+}
+
+.settings-shell__navigation-panel > .settings-shell__navigation-list {
+  overflow: hidden;
+  min-height: 0;
+  padding-top: var(--space-1);
+}
+
 .settings-shell__navigation-domain-icon,
 .settings-shell__navigation-link-icon {
   width: var(--space-4);
@@ -411,7 +486,10 @@
 @media (prefers-reduced-motion: reduce) {
   .settings-shell__navigation-link,
   .settings-overview-link,
-  .settings-disclosure__icon {
+  .settings-disclosure__icon,
+  .settings-shell__navigation-panel,
+  .settings-shell__navigation-chevron,
+  .settings-shell__navigation-toggle {
     transition: none;
   }
 

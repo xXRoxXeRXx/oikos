@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.71.22] - 2026-06-12
+
+### Changed
+- **Collapsible settings sidebar on desktop**: the settings navigation (≥1024px) used to list every domain and all its pages at once, which ran very long for admins (5 sections, 18 links). The five domain groups (Personal, Modules, Sync, Documents, Administration) are now a single-open accordion: the domain you are currently in is expanded and the others collapse to just their header, with a smooth height animation and a rotating chevron. Switching pages automatically opens the matching domain and closes the rest. Collapsed sections are removed from the keyboard tab order, the open/close motion respects reduced-motion preferences, and the accordion only activates when more than one domain is visible (single-domain members keep the flat list). The mobile drill-down navigation is unchanged.
+
 ## [0.71.21] - 2026-06-12
 
 ### Changed
