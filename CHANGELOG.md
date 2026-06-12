@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.71.18] - 2026-06-12
+
+### Changed
+- **Modal size reference completed**: the `openModal({ size })` documentation now lists all four sizes (`sm`/`md`/`lg`/`xl`) with their widths, matching the CSS and the design system instead of omitting the `xl` size that the Documents module already uses.
+
+### Removed
+- **Dead loading translation keys**: two unused `loadingIndicator` strings (Recipes and Budget) were removed across all 19 locales; the shared skeleton loading state replaced them in v0.71.14–0.71.17.
+
 ## [0.71.17] - 2026-06-12
 
 ### Fixed
