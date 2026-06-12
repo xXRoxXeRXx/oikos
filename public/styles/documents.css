@@ -420,6 +420,17 @@
   font-size: var(--text-sm);
 }
 
+@media (min-width: 768px) and (max-width: 1023px) {
+  .documents-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .documents-toolbar__search {
+    order: 4;
+    flex-basis: 100%;
+  }
+}
+
 @media (max-width: 767px) {
   .documents-toolbar {
     flex-wrap: wrap;

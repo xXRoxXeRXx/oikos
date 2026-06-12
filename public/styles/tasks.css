@@ -59,7 +59,7 @@
   min-height: var(--target-base);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1023px) {
   /* Shell-Padding/Titel/Actions kommen aus .page-toolbar (layout.css).
    * Das Overflow-Panel ankert an .tasks-toolbar__secondary, daher reicht hier
    * dessen position:relative. */

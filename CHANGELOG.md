@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.71.32] - 2026-06-12
+
+### Changed
+- **Responsive module layouts now preserve readability from narrow phones through tablets**: Notes use width-aware grid columns without horizontal overflow, dense Tasks and Documents controls collapse or wrap before labels are squeezed, Kitchen tabs remain visible, Settings overview links use tablet space efficiently, dashboard note cards constrain long content, and Birthdays presents one clear mobile creation action.
+
 ## [0.71.31] - 2026-06-12
 
 ### Changed

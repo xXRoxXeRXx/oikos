@@ -1044,11 +1044,78 @@ test('phase 3 mobile Tasks toolbar collapses secondary controls into one overflo
   assert.match(tasksPage, /<div class="tasks-toolbar__secondary-panel">[\s\S]*id="group-mode-toggle"[\s\S]*id="view-toggle"[\s\S]*id="btn-bulk-select"/);
   assert.match(
     tasksCss,
-    /@media \(max-width:\s*640px\)[\s\S]*\.tasks-toolbar__secondary-panel\s*\{[\s\S]*position:\s*absolute[\s\S]*display:\s*none/
+    /@media \(max-width:\s*1023px\)[\s\S]*\.tasks-toolbar__secondary-panel\s*\{[\s\S]*position:\s*absolute[\s\S]*display:\s*none/
   );
   assert.match(
     tasksCss,
-    /@media \(max-width:\s*640px\)[\s\S]*\.tasks-toolbar__secondary\[open\] \.tasks-toolbar__secondary-panel\s*\{[\s\S]*display:\s*flex/
+    /@media \(max-width:\s*1023px\)[\s\S]*\.tasks-toolbar__secondary\[open\] \.tasks-toolbar__secondary-panel\s*\{[\s\S]*display:\s*flex/
+  );
+});
+
+test('responsive adaptation keeps Notes vertical and prevents intrinsic-width overflow', () => {
+  const notes = read('../public/styles/notes.css');
+  const dashboard = read('../public/styles/dashboard.css');
+
+  assert.match(notes, /\.notes-toolbar__search\s*\{[\s\S]*min-width:\s*0/);
+  assert.match(notes, /\.notes-toolbar\s+\.page-toolbar__title\s*\{[\s\S]*flex:\s*0\s+0\s+auto/);
+  assert.match(notes, /\.notes-grid\s*\{[\s\S]*display:\s*grid/);
+  assert.match(notes, /\.notes-grid\s*\{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  assert.doesNotMatch(notes, /\.notes-grid\s*\{[\s\S]*?columns:\s*2/);
+  assert.match(
+    notes,
+    /@container notes-page \(min-width:\s*520px\)[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/
+  );
+  assert.match(
+    notes,
+    /@container notes-page \(min-width:\s*720px\)[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/
+  );
+  assert.match(
+    dashboard,
+    /\.notes-grid-widget\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/
+  );
+});
+
+test('responsive adaptation keeps all three Kitchen tabs visible on narrow phones', () => {
+  const kitchenTabs = read('../public/styles/kitchen-tabs.css');
+
+  assert.match(
+    kitchenTabs,
+    /@media \(max-width:\s*640px\)[\s\S]*\.kitchen-tabs-bar\s*\{[\s\S]*padding-inline:\s*var\(--space-2\)/
+  );
+  assert.match(
+    kitchenTabs,
+    /\.kitchen-tabs-bar \.sub-tab\s*\{[\s\S]*flex:\s*1 1 0[\s\S]*min-width:\s*0/
+  );
+  assert.match(
+    kitchenTabs,
+    /\.kitchen-tabs-bar \.sub-tab__label\s*\{[\s\S]*text-overflow:\s*ellipsis/
+  );
+});
+
+test('responsive adaptation uses tablet space without crowding module toolbars', () => {
+  const documents = read('../public/styles/documents.css');
+  const settings = read('../public/styles/settings.css');
+
+  assert.match(
+    documents,
+    /@media \(min-width:\s*768px\) and \(max-width:\s*1023px\)[\s\S]*\.documents-toolbar\s*\{[\s\S]*flex-wrap:\s*wrap/
+  );
+  assert.match(
+    documents,
+    /@media \(min-width:\s*768px\) and \(max-width:\s*1023px\)[\s\S]*\.documents-toolbar__search\s*\{[\s\S]*flex-basis:\s*100%/
+  );
+  assert.match(
+    settings,
+    /@media \(min-width:\s*768px\) and \(max-width:\s*1023px\)[\s\S]*\.settings-mobile-overview__links\s*\{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/
+  );
+});
+
+test('responsive adaptation removes duplicate Birthday creation action on phones', () => {
+  const birthdays = read('../public/styles/birthdays.css');
+
+  assert.match(
+    birthdays,
+    /@media \(max-width:\s*640px\)[\s\S]*\.birthdays-header__action\s*\{[\s\S]*display:\s*none/
   );
 });
 

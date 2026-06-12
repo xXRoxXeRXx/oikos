@@ -363,6 +363,10 @@
 }
 
 @media (max-width: 640px) {
+  .birthdays-header__action {
+    display: none;
+  }
+
   .birthday-modal__identity {
     flex-direction: column;
   }

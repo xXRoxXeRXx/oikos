@@ -818,7 +818,7 @@ Skeleton loading instead of spinners (skeleton renders all 9 widgets at their co
 - Inline reminder presets: offset from due date/time — 15 min, 1 h, 1 d, 2 d, 1 w, 2 w, or fully custom offset
 - **Bulk actions (list view only):** select multiple tasks via checkboxes and apply batch operations (mark done, mark open, archive, delete); bulk select toggle in toolbar
 - **Start date:** tasks can have an optional start date; tasks with a future start date are hidden from the default list view to reduce cognitive load. A "Show scheduled" toggle chip in the filter bar reveals all upcoming planned tasks. Task cards display a "Starts on …" badge when a start date is set.
-- **Mobile toolbar (v0.55.8):** secondary controls collapse into a single overflow trigger on small screens; bulk actions remain hidden until at least one task is selected. Checkbox and row actions use the shared 44px target tokens.
+- **Responsive toolbar:** secondary controls collapse into a single overflow trigger through phone and tablet widths (≤ 1023px); bulk actions remain hidden until at least one task is selected. Checkbox and row actions use the shared touch-target tokens.
 - Mobile swipe: left = done, right = edit
 - Badge for overdue tasks
 
@@ -881,7 +881,7 @@ Reusable recipe cards linked to meal slots.
 
 ### Notes (`/notes`)
 
-Masonry grid with colored sticky notes.
+Responsive grid with colored sticky notes. Phones use one readable column; wider containers progressively use two columns from 520px, three from 720px, four from 900px, and five from 1200px. The title keeps its intrinsic width while search flexes into the remaining toolbar space, preventing clipping on narrow screens.
 
 - CRUD: title (optional), content, color
 - Pin → appears at top + on dashboard
@@ -909,6 +909,7 @@ Upload and manage family files with per-document access control.
 - Drag-and-drop upload in the new-document modal
 - **Folder browser:** documents can be organized into custom folders; a sidebar lists all folders plus "Alle Ordner"; a "Hausreinigung" folder is auto-created when the first housekeeping worker is added
 - **Grid / list view** toggle; view mode persisted in localStorage
+- **Responsive toolbar:** at tablet widths (768–1023px), the search field moves to a full-width second row so the page title, filters, and view controls remain readable.
 - **Category tags:** 14 predefined categories (medical, school, identity, insurance, finance, home, vehicle, legal, travel, pets, warranty, taxes, work, other)
 - **Visibility:** family (all members see it), restricted (only selected members), private (only the uploader)
 - **Archive / restore** — archived documents hidden from the main view, accessible via the Archive filter
@@ -978,7 +979,7 @@ User management and app configuration. Logged-in users only.
   - **Documents** (admin): Document storage, Document management (DMS)
   - **Administration** (admin): Family and roles, API access, Backup and restore, System
 
-  A central registry (`public/settings/registry.js`) is the single source of truth for domains, routes, roles, labels, icons, and legacy-tab mappings; each leaf is **lazy-loaded** and owns only its own API domain. Members see only Personal; deep links to admin pages redirect to Personal → Account with a localized notice. The shared responsive shell (`public/settings/shell.js`) renders a **sticky local navigation column** on desktop (≥ 960 px, with `aria-current="page"` and a focus-managed page heading) and a **history-aware mobile drill-down** below 960 px (settings overview → domain overview → leaf, with breadcrumbs and Back traversal). Each leaf catches its own load/save errors with inline retry without dropping sibling sections. Legacy `oikos:settings:tab` values migrate once to the new paths; the former flat tab bar and `settings-nav.js`/`settings-nav.css` are removed.
+  A central registry (`public/settings/registry.js`) is the single source of truth for domains, routes, roles, labels, icons, and legacy-tab mappings; each leaf is **lazy-loaded** and owns only its own API domain. Members see only Personal; deep links to admin pages redirect to Personal → Account with a localized notice. The shared responsive shell (`public/settings/shell.js`) renders a **sticky local navigation column** on desktop (≥ 1024px, with `aria-current="page"` and a focus-managed page heading) and a **history-aware drill-down** below 1024px (settings overview → domain overview → leaf, with breadcrumbs and Back traversal). Tablet overview pages use two columns from 768–1023px instead of leaving half the content area empty. Each leaf catches its own load/save errors with inline retry without dropping sibling sections. Legacy `oikos:settings:tab` values migrate once to the new paths; the former flat tab bar and `settings-nav.js`/`settings-nav.css` are removed.
 - **Family management (admin):** assign a `family_role` (Dad, Mom, Parent, Child, Grandparent, Relative, Other) to each user, and set per-member phone, email, and birthday — automatically synced to Contacts and Birthdays. Displayed in the family member list and profile views.
 - **Profile picture:** users can upload a personal avatar (PNG/JPEG/WebP, ≤ 5 MB), stored as a Base64 JPEG data URL in `avatar_data` at 256 × 256 px. After selecting a file a **canvas crop dialog** opens: the user can drag the image and zoom (slider or mouse wheel) to choose the square crop region before confirming. Shown in all avatar circles throughout the app — task cards, calendar agenda, user assignment picker, dashboard task widget, dashboard calendar widget, and notes creator badge — with coloured initials as fallback when no photo is set. Housekeeping staff avatars use the same crop dialog.
 - **App info:** version, license
@@ -1011,6 +1012,7 @@ Personal birthday tracker with automatic calendar integration.
 - CRUD: name, birth_date (day/month/year or day/month only for age-unknown entries), notes, photo
 - Profile photo upload (PNG/JPEG/WebP/GIF, ≤ 5 MB, stored as Base64 data URL)
 - **Upcoming view:** birthdays sorted by days until next occurrence; shows age when year is known
+- **Mobile action hierarchy:** phones expose creation through the persistent FAB only; the duplicate header action is hidden so the title retains the available width.
 - **Calendar integration:** creating or updating a birthday automatically creates/updates a recurring annual all-day calendar event (title: "🎂 {Name}"); deleting a birthday removes the linked event
 - **Configurable reminder:** customizable reminder offset per birthday with preset options (none, at time, 15 min, 1 h, 1 d, 2 d, 1 w, 2 w) and a fully custom interval (amount + unit). Reminder time calculated from offset; auto-dismissed when the birthday passes
 - Search filter by name
@@ -1208,6 +1210,12 @@ Source of truth: `public/styles/tokens.css`. Key values (as of v0.55.10):
 - Micro: 10px for numeric counters and notification indicators only.
 - Typography is assigned through semantic `--type-*` tokens. Hero and page-title roles switch at the 1024px breakpoint; app headings do not use fluid `clamp()` sizing.
 - Inputs and prose stay at 16px. Readable supporting text and interactive controls have a 14px minimum.
+
+### Responsive Composition
+- Phone layouts prioritize one readable content column, complete titles, and one clear primary creation action. Horizontal scrolling is reserved for deliberate tab or timeline patterns, never used to compensate for clipped cards or toolbars.
+- Tablet layouts (768–1023px) may wrap dense toolbars and use two-column overview grids while retaining the mobile navigation model.
+- Desktop composition starts at 1024px. Full secondary toolbars and persistent local navigation return only when their labels and controls fit without compression.
+- Grid tracks that contain variable text use `minmax(0, 1fr)` so long localized content cannot enlarge the page beyond the viewport.
 
 ### Glass Layer (`public/styles/glass.css`)
 
