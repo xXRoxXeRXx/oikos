@@ -199,17 +199,17 @@
 }
 
 .filter-chip--active {
-  background-color: var(--color-accent-light);
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  background-color: color-mix(in srgb, var(--module-accent, var(--color-accent)) 14%, transparent);
+  border-color: var(--module-accent, var(--color-accent));
+  color: var(--module-accent, var(--color-accent));
 }
 
 @supports (backdrop-filter: blur(1px)) {
   .filter-chip--active {
-    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    background: color-mix(in srgb, var(--module-accent, var(--color-accent)) 18%, transparent);
     backdrop-filter: var(--blur-xs);
     -webkit-backdrop-filter: var(--blur-xs);
-    border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+    border-color: color-mix(in srgb, var(--module-accent, var(--color-accent)) 50%, transparent);
     box-shadow: var(--glass-inset-base);
   }
 }
@@ -222,8 +222,8 @@
 
 .filter-chip--recent:hover {
   opacity: 1;
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  border-color: var(--module-accent, var(--color-accent));
+  color: var(--module-accent, var(--color-accent));
 }
 
 .filter-chip__remove {
@@ -234,7 +234,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background-color: var(--color-accent);
+  background-color: var(--module-accent, var(--color-accent));
   color: var(--color-ink-on-vivid);
 }
 
@@ -264,8 +264,8 @@
 }
 
 .filter-toggle-btn--active {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  border-color: var(--module-accent, var(--color-accent));
+  color: var(--module-accent, var(--color-accent));
 }
 
 .filter-toggle-btn__count {
@@ -276,7 +276,7 @@
   height: 18px;
   padding: 0 var(--space-1);
   border-radius: var(--radius-full);
-  background-color: var(--color-accent);
+  background-color: var(--module-accent, var(--color-accent));
   color: var(--color-ink-on-vivid);
   font-size: var(--text-xs);
   font-weight: var(--font-weight-semibold);

@@ -640,7 +640,7 @@
 .agenda-event {
   display: flex;
   align-items: stretch;
-  gap: var(--space-3);
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   border: var(--space-px) solid var(--color-border-subtle);
@@ -656,11 +656,14 @@
   border-color: var(--color-border);
 }
 
+/* Kalenderfarbe als Dot statt vollhohem Seitenstreifen — konsistent mit den
+ * Status-Dots der Aufgabenliste und dem Dashboard-Kalenderwidget. */
 .agenda-event__color {
-  width: var(--space-1);
+  width: var(--space-2);
+  height: var(--space-2);
+  align-self: center;
   border-radius: var(--radius-full);
   flex-shrink: 0;
-  opacity: 0.9;
 }
 
 .agenda-event__body {

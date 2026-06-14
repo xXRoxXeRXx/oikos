@@ -1524,7 +1524,11 @@ test('calendar agenda events and task chips keep readable contrast in mobile age
 
   assert.match(eventBody, /background:\s*var\(--color-surface-work\)/, 'agenda rows need a solid surface for mobile contrast');
   assert.match(eventBody, /border:\s*var\(--space-px\)\s+solid\s+var\(--color-border-subtle\)/, 'agenda rows need a boundary in both themes');
-  assert.match(colorBody, /width:\s*var\(--space-1\)/, 'agenda color rail should be tokenized and visible');
+  // Kalenderfarbe ist ein zentrierter Dot (kein vollhoher Seitenstreifen) —
+  // tokenisiert und sichtbar, konsistent mit den Status-Dots der Aufgabenliste.
+  assert.match(colorBody, /width:\s*var\(--space-2\)/, 'agenda color dot should use a spacing token for its width');
+  assert.match(colorBody, /height:\s*var\(--space-2\)/, 'agenda color dot should be a fixed-size dot, not a full-height rail');
+  assert.match(colorBody, /border-radius:\s*var\(--radius-full\)/, 'agenda color dot should be round');
   assert.match(taskBody, /background:\s*color-mix\(in srgb,\s*currentColor/, 'task chips should tint from their readable text color');
   assert.match(taskBody, /border-color:\s*color-mix\(in srgb,\s*currentColor/, 'task chips should have more than colored text');
   assert.match(metaBody, /color:\s*var\(--color-text-secondary\)/, 'metadata should remain legible in light and dark themes');

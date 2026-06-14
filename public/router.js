@@ -9,6 +9,7 @@ import { initI18n, getLocale, t } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { init as initReminders, stop as stopReminders } from '/reminders.js';
 import { isKitchenRoute, getLastKitchenRoute } from '/utils/kitchen-tabs.js';
+import { buildHelpRows } from '/utils/help.js';
 import { NAV_ICONS } from '/nav-icons.js';
 import { SETTINGS_LEAVES } from '/settings/registry.js';
 import {
@@ -797,6 +798,32 @@ function renderAppShell(container) {
   sidebar.appendChild(sidebarLogo);
   sidebar.appendChild(sidebarToggle);
   sidebar.appendChild(sidebarItems);
+
+  // Hilfe-Eintrag im Sidebar-Footer (Aktion, keine Route → kein data-route, damit
+  // Route-Delegation/Indikator ihn ignorieren).
+  const sidebarHelp = document.createElement('button');
+  sidebarHelp.type = 'button';
+  sidebarHelp.className = 'nav-item nav-item--help';
+  sidebarHelp.setAttribute('aria-label', t('nav.help'));
+  sidebarHelp.setAttribute('title', t('nav.help'));
+  sidebarHelp.addEventListener('click', () => showHelpModal());
+  const helpWrap = document.createElement('div');
+  helpWrap.className = 'nav-item__icon-wrap';
+  const helpWell = document.createElement('div');
+  helpWell.className = 'nav-item__icon-well';
+  const helpIcon = document.createElement('i');
+  helpIcon.dataset.lucide = 'circle-help';
+  helpIcon.className = 'nav-item__icon';
+  helpIcon.setAttribute('aria-hidden', 'true');
+  helpWell.appendChild(helpIcon);
+  helpWrap.appendChild(helpWell);
+  const helpLabel = document.createElement('span');
+  helpLabel.className = 'nav-item__label';
+  helpLabel.textContent = t('nav.help');
+  sidebarHelp.appendChild(helpWrap);
+  sidebarHelp.appendChild(helpLabel);
+  sidebar.appendChild(sidebarHelp);
+
   if (window.lucide) window.lucide.createIcons({ el: sidebar });
 
   const main = document.createElement('main');
@@ -857,6 +884,29 @@ function renderAppShell(container) {
     moreSheet.appendChild(moreSearchBar);
 
     secondaryMobileItems().forEach((item) => moreSheet.appendChild(moreItemEl(item)));
+
+    // Hilfe-Zeile im „Mehr“-Sheet: schließt das Sheet und öffnet das Overlay.
+    const moreHelp = document.createElement('button');
+    moreHelp.type = 'button';
+    moreHelp.className = 'more-item more-item--help';
+    moreHelp.setAttribute('aria-label', t('nav.help'));
+    moreHelp.addEventListener('click', () => {
+      if (window._closeMoreSheet) window._closeMoreSheet({ restoreFocus: false });
+      showHelpModal();
+    });
+    const moreHelpWell = document.createElement('div');
+    moreHelpWell.className = 'more-item__icon-well';
+    const moreHelpIcon = document.createElement('i');
+    moreHelpIcon.dataset.lucide = 'circle-help';
+    moreHelpIcon.className = 'more-item__icon';
+    moreHelpIcon.setAttribute('aria-hidden', 'true');
+    moreHelpWell.appendChild(moreHelpIcon);
+    const moreHelpLabel = document.createElement('span');
+    moreHelpLabel.className = 'more-item__label';
+    moreHelpLabel.textContent = t('nav.help');
+    moreHelp.appendChild(moreHelpWell);
+    moreHelp.appendChild(moreHelpLabel);
+    moreSheet.appendChild(moreHelp);
   }
 
   bottomNav.appendChild(bottomItems);
@@ -970,7 +1020,7 @@ const SHORTCUTS = [
     document.getElementById('more-sheet-search')?.click();
   } },
   { key: 'n',   description: () => t('shortcuts.new'),     action: () => document.querySelector('.page-fab')?.click() },
-  { key: '?',   description: () => t('shortcuts.help'),    action: () => showShortcutsModal() },
+  { key: '?',   description: () => t('shortcuts.help'),    action: () => showHelpModal() },
   { key: 'g d', description: () => t('shortcuts.goDash'),  action: () => navigate('/') },
   { key: 'g t', description: () => t('shortcuts.goTasks'), action: () => navigate('/tasks') },
   { key: 'g c', description: () => t('shortcuts.goCal'),   action: () => navigate('/calendar') },
@@ -1038,7 +1088,12 @@ function initKeyboardShortcuts() {
   });
 }
 
-function showShortcutsModal() {
+function showHelpModal() {
+  // Mirrors the CSS sidebar↔bottom-nav breakpoint (sidebar is min-width:1024px):
+  // without a keyboard, shortcut rows are useless — show a plain-language guide.
+  const coarsePointer = window.matchMedia('(max-width: 1023px)').matches;
+  const helpRows = buildHelpRows({ coarsePointer, shortcuts: SHORTCUTS, t });
+
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.setAttribute('aria-modal', 'true');
@@ -1047,18 +1102,22 @@ function showShortcutsModal() {
   const panel = document.createElement('div');
   panel.className = 'modal-panel modal-panel--sm';
   panel.setAttribute('role', 'dialog');
-  panel.setAttribute('aria-label', t('shortcuts.help'));
+  panel.setAttribute('aria-label', t('help.title'));
 
-  const rows = SHORTCUTS.map((s) => `
-    <div class="shortcuts-row">
-      <kbd class="shortcut-kbd">${esc(s.key)}</kbd>
-      <span class="shortcut-desc">${esc(s.description())}</span>
-    </div>
-  `).join('');
+  const rows = helpRows.map((r) => r.key
+    ? `<div class="help-row">
+         <kbd class="shortcut-kbd">${esc(r.key)}</kbd>
+         <span class="shortcut-desc">${esc(r.desc)}</span>
+       </div>`
+    : `<div class="help-row">
+         <i data-lucide="${esc(r.icon)}" class="help-row__icon icon-md" aria-hidden="true"></i>
+         <span class="shortcut-desc">${esc(r.desc)}</span>
+       </div>`
+  ).join('');
 
   panel.insertAdjacentHTML('beforeend', `
     <div class="modal-panel__header">
-      <span class="modal-panel__title">${esc(t('shortcuts.help'))}</span>
+      <span class="modal-panel__title">${esc(t('help.title'))}</span>
       <button class="modal-panel__close btn--ghost" aria-label="${esc(t('common.close'))}">
         <i data-lucide="x" class="icon-md" aria-hidden="true"></i>
       </button>

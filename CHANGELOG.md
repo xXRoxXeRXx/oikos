@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.71.44] - 2026-06-14
+
+### Changed
+- **Holiday data syncs at most once every 30 days**: the automatic background holiday sync no longer calls the OpenHolidays API on every sync cycle (every 15 minutes by default) — it now skips when the cache was refreshed within the last 30 days, cutting needless external requests for data that changes at most yearly. The manual "Sync now" button in Settings still forces an immediate refresh.
+
+### Fixed
+- **"Heute wichtig" calendar card shows only today's events**: the dashboard Today Cockpit's calendar card listed the next upcoming event even when it was days away; it now counts and shows only events that fall on the current day.
+- **DMS account action buttons aligned inside the card**: the Test/Remove buttons for a connected document-management account are now rendered inside the account's status card instead of spilling outside its border.
+
+## [0.71.43] - 2026-06-14
+
+### Added
+- **Visible help entry**: a "Hilfe" item now sits in the desktop sidebar and in the mobile "More" sheet, opening a help overlay. On desktop it lists the keyboard shortcuts; on touch devices (where shortcuts don't apply) it shows a short plain-language guide — how to navigate, create with the + button, search, and find settings. The `?` keyboard shortcut still opens the same overlay.
+
+## [0.71.42] - 2026-06-13
+
+### Changed
+- **Contact category icons** now use Lucide line icons (stethoscope, graduation cap, landmark, shield, wrench, …) instead of emoji, matching the line-icon style used across the rest of the app.
+- **Calendar event colour shown as a dot**: the agenda list and the dashboard calendar widget now mark an event's calendar colour with a small dot instead of a coloured bar on the card's edge, using the same vocabulary as the task list's status dots.
+- **Tasks filter row uses the module accent**: the active filter chip, the clear badge, and the filter toggle now use the Tasks green instead of the global violet, so the filter row matches the rest of the module.
+
+### Fixed
+- **Single way to add a recipe**: Recipes no longer shows a toolbar "Add recipe" button next to the floating action button; the floating action button is now the only create action, consistent with every other module.
+- **Calendar names with "&" display correctly**: external calendar names that arrived HTML-entity-encoded (e.g. an imported Google calendar shown as "Termine &amp; Verabredungen") are now stored and displayed as plain text; existing names are repaired automatically.
+
 ## [0.71.41] - 2026-06-13
 
 ### Changed
