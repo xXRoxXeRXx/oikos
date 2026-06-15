@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.71.45] - 2026-06-15
+
+### Fixed
+- **Settings side navigation updates its language on locale switch**: changing the application language while on a Settings page left the side navigation menu and the page header in the previous language until a hard reload. The Settings shell now tracks the locale it last rendered with and performs a full re-render when it changes, so the labels update immediately like the rest of the app.
+
 ## [0.71.44] - 2026-06-14
 
 ### Changed
