@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Move down",
         "loading": "Yükleniyor...",
         "sectionWeather": "Hava Durumu Widget",
-        "weatherTitle": "Open-Meteo (ücretsiz, API anahtarı gerekmez)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Harici hesap olmadan panelde canlı hava durumu. Konumunuzun koordinatlarını girin.",
         "weatherCoordHint": "Koordinatları openstreetmap.org veya Google Maps'te bulabilirsiniz.",
         "weatherLatLabel": "Enlem",

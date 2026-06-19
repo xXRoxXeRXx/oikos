@@ -1191,7 +1191,7 @@
         "modulesMoveDown": "Di chuyển xuống",
         "loading": "Đang tải...",
         "sectionWeather": "Tiện ích Thời tiết",
-        "weatherTitle": "Open-Meteo (miễn phí, không cần API key)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Thời tiết trực tiếp trên bảng điều khiển mà không cần tài khoản ngoài. Nhập tọa độ vị trí của bạn.",
         "weatherCoordHint": "Tìm tọa độ trên openstreetmap.org hoặc Google Maps.",
         "weatherLatLabel": "Vĩ độ",

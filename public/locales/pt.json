@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Mover para baixo",
         "loading": "Carregando...",
         "sectionWeather": "Widget de tempo",
-        "weatherTitle": "Open-Meteo (gratuito, sem chave API)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Tempo em tempo real no painel sem conta externa. Insira as coordenadas da sua localização.",
         "weatherCoordHint": "Encontre coordenadas em openstreetmap.org ou Google Maps.",
         "weatherLatLabel": "Latitude",

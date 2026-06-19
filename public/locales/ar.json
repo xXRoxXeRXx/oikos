@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Move down",
         "loading": "جارٍ التحميل...",
         "sectionWeather": "أداة الطقس",
-        "weatherTitle": "Open-Meteo (مجاني، بدون مفتاح API)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "طقس مباشر على لوحة التحكم بدون حساب خارجي. أدخل إحداثيات موقعك.",
         "weatherCoordHint": "يمكن العثور على الإحداثيات على openstreetmap.org أو خرائط Google.",
         "weatherLatLabel": "خط العرض",

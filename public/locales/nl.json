@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Omlaag verplaatsen",
         "loading": "Laden...",
         "sectionWeather": "Weer-widget",
-        "weatherTitle": "Open-Meteo (gratis, geen API-sleutel)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Live weer op het dashboard zonder extern account. Voer de coördinaten van je locatie in.",
         "weatherCoordHint": "Coördinaten vind je op openstreetmap.org of Google Maps.",
         "weatherLatLabel": "Breedtegraad",

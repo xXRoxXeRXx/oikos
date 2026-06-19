@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Dolů",
         "loading": "Načítání...",
         "sectionWeather": "Widget počasí",
-        "weatherTitle": "Open-Meteo (zdarma, bez API klíče)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Živé počasí na nástěnce bez externího účtu. Zadejte souřadnice vaší polohy.",
         "weatherCoordHint": "Souřadnice najdete na openstreetmap.org nebo Google Maps.",
         "weatherLatLabel": "Zeměpisná šířka",

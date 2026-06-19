@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Move down",
         "loading": "Φόρτωση...",
         "sectionWeather": "Widget Καιρού",
-        "weatherTitle": "Open-Meteo (δωρεάν, χωρίς API κλειδί)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Ζωντανός καιρός στον πίνακα ελέγχου χωρίς εξωτερικό λογαριασμό. Εισάγετε τις συντεταγμένες της τοποθεσίας σας.",
         "weatherCoordHint": "Βρείτε συντεταγμένες στο openstreetmap.org ή Google Maps.",
         "weatherLatLabel": "Γεωγραφικό πλάτος",

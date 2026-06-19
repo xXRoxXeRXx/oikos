@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Move down",
         "loading": "Läser in...",
         "sectionWeather": "Väder-widget",
-        "weatherTitle": "Open-Meteo (gratis, ingen API-nyckel)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Liveväder på instrumentpanelen utan externt konto. Ange koordinaterna för din plats.",
         "weatherCoordHint": "Hitta koordinater på openstreetmap.org eller Google Maps.",
         "weatherLatLabel": "Latitud",

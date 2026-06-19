@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Move down",
         "loading": "Loading...",
         "sectionWeather": "Weather Widget",
-        "weatherTitle": "Open-Meteo (free, no API key)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Live weather on the dashboard without an external account. Enter your location coordinates.",
         "weatherCoordHint": "Find coordinates on openstreetmap.org or Google Maps.",
         "weatherLatLabel": "Latitude",

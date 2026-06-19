@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Move down",
         "loading": "正在加载...",
         "sectionWeather": "天气小组件",
-        "weatherTitle": "Open-Meteo（免费，无需API密钥）",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "无需外部账户，在仪表板上显示实时天气。输入您所在位置的坐标。",
         "weatherCoordHint": "可在openstreetmap.org或Google地图上查找坐标。",
         "weatherLatLabel": "纬度",

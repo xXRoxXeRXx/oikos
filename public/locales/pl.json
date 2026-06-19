@@ -1220,7 +1220,7 @@
         "modulesMoveDown": "Move down",
         "loading": "Ładowanie...",
         "sectionWeather": "Widget pogodowy",
-        "weatherTitle": "Open-Meteo (bezpłatny, bez klucza API)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Pogoda na żywo na pulpicie bez zewnętrznego konta. Podaj współrzędne swojej lokalizacji.",
         "weatherCoordHint": "Współrzędne znajdziesz na openstreetmap.org lub Google Maps.",
         "weatherLatLabel": "Szerokość geograficzna",

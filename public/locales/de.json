@@ -1220,7 +1220,7 @@
         "modulesMoveDown": "Nach unten",
         "loading": "Wird geladen...",
         "sectionWeather": "Wetter-Widget",
-        "weatherTitle": "Open-Meteo (kostenlos, kein API-Schlüssel)",
+        "weatherTitle": "Haushalts-Standardstandort",
         "weatherDescription": "Live-Wetter auf dem Dashboard ohne externen Account. Koordinaten deines Standorts eingeben.",
         "weatherCoordHint": "Koordinaten findest du z. B. auf openstreetmap.org oder Google Maps.",
         "weatherLatLabel": "Breitengrad",

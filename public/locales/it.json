@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Move down",
         "loading": "Caricamento...",
         "sectionWeather": "Widget Meteo",
-        "weatherTitle": "Open-Meteo (gratuito, senza chiave API)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Meteo in tempo reale nella dashboard senza account esterno. Inserisci le coordinate della tua posizione.",
         "weatherCoordHint": "Trova le coordinate su openstreetmap.org o Google Maps.",
         "weatherLatLabel": "Latitudine",

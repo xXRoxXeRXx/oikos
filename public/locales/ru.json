@@ -1214,7 +1214,7 @@
         "modulesMoveDown": "Move down",
         "loading": "Загрузка...",
         "sectionWeather": "Виджет погоды",
-        "weatherTitle": "Open-Meteo (бесплатно, без API-ключа)",
+        "weatherTitle": "[de: Haushalts-Standardstandort]",
         "weatherDescription": "Погода в реальном времени на панели без внешнего аккаунта. Введите координаты вашего местоположения.",
         "weatherCoordHint": "Координаты можно найти на openstreetmap.org или Google Maps.",
         "weatherLatLabel": "Широта",
