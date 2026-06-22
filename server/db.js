@@ -2257,6 +2257,19 @@ const MIGRATIONS = [
         ON notification_deliveries(status, next_attempt_at);
     `,
   },
+  {
+    version: 61,
+    description: 'Restore reminders.pushed_at column lost by migration 57',
+    up(db) {
+      // Migration 57 recreated the reminders table but forgot to carry pushed_at
+      // across. Only add the column if it is still missing (idempotent guard).
+      const cols = db.prepare('PRAGMA table_info(reminders)').all();
+      const hasPushedAt = cols.some((c) => c.name === 'pushed_at');
+      if (!hasPushedAt) {
+        db.exec('ALTER TABLE reminders ADD COLUMN pushed_at TEXT;');
+      }
+    },
+  },
 ];
 
 /**
