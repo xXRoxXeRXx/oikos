@@ -129,7 +129,13 @@ jobs:
           body = os.environ.get("RELEASE_BODY", "").strip()
           p = "yuvomi/umbrel-app.yml"
           t = open(p).read()
-          t = re.sub(r"^releaseNotes:.*$", "releaseNotes: " + json.dumps(body), t, count=1, flags=re.M)
+          t = re.sub(
+            r"^releaseNotes:.*$",
+            lambda _: "releaseNotes: " + json.dumps(body),
+            t,
+            count=1,
+            flags=re.M,
+          )
           open(p, "w").write(t)
           PY
 
