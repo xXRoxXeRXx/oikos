@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.77.5] - 2026-06-25
+
+### Fixed
+- **Weather widget: personal locations now show on the dashboard without a household weather provider:** a per-user Open-Meteo location now activates the weather proxy even when no admin household location is configured, so enabling the weather widget in the overview can render the user's own weather data.
+- **Translations: removed German placeholders from the personal weather and assignment UI:** all supported locales now translate the personal weather settings labels and the shared user multi-select "No one" copy instead of showing German fallback text.
+- **Dark mode: date-navigation arrows in Meals and Calendar are now visible on desktop:** the previous/next chevrons now use the app accent color instead of inheriting a dark/default icon color.
+
 ## [0.77.4] - 2026-06-25
 
 ### Added

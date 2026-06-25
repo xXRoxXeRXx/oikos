@@ -1227,7 +1227,7 @@
         "modulesMoveDown": "Le",
         "loading": "Betöltés...",
         "sectionWeather": "Időjárás widget",
-        "weatherTitle": "Háztartás helye",
+        "weatherTitle": "Háztartás alapértelmezett helye",
         "weatherDescription": "Élő időjárás a műszerfalon külső fiók nélkül. Adja meg a hely koordinátáit.",
         "weatherCoordHint": "Koordináták keresése az openstreetmap.org vagy a Google Maps segítségével.",
         "weatherLatLabel": "Szélesség",

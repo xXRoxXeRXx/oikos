@@ -95,6 +95,35 @@ test('static frontend translation keys exist in every locale', () => {
   assertKeysExistInEveryLocale(keys);
 });
 
+test('app locale values do not ship German placeholder markers', () => {
+  const localeFiles = readdirSync(new URL('../public/locales/', import.meta.url))
+    .filter((file) => file.endsWith('.json'));
+  const violations = [];
+
+  function collect(value, path, file) {
+    if (typeof value === 'string') {
+      if (value.includes('[de:')) violations.push(`${file}:${path}`);
+      return;
+    }
+    if (!value || typeof value !== 'object') return;
+    for (const [key, child] of Object.entries(value)) collect(child, path ? `${path}.${key}` : key, file);
+  }
+
+  for (const file of localeFiles) {
+    collect(JSON.parse(read(`../public/locales/${file}`)), '', file);
+  }
+
+  assert.deepEqual(violations, []);
+});
+
+test('English and French user multi-select none labels are localized', () => {
+  const en = JSON.parse(read('../public/locales/en.json'));
+  const fr = JSON.parse(read('../public/locales/fr.json'));
+
+  assert.equal(en.userMultiSelect.nobody, '- No one -');
+  assert.equal(fr.userMultiSelect.nobody, '- Personne -');
+});
+
 test('dynamic frontend translation key domains exist in every locale', () => {
   const familyRoles = ['dad', 'mom', 'parent', 'child', 'grandparent', 'relative', 'other'];
   const documentCategories = ['medical', 'school', 'identity', 'insurance', 'finance', 'home', 'vehicle', 'legal', 'travel', 'pets', 'warranty', 'taxes', 'work', 'other'];
@@ -1574,6 +1603,14 @@ test('calendar metadata uses lucide icon markup instead of visible emoji', () =>
   assert.doesNotMatch(source, /📍|🗓|📅|🎂|👤/, 'calendar metadata must not render visible emoji icons');
   assert.match(source, /calendarMetaIconHtml\('map-pin'\)/, 'location metadata should use the shared metadata icon helper');
   assert.match(source, /class="calendar-meta-icon icon-sm"/, 'metadata icons should use tokenized icon classes');
+});
+
+test('desktop Meals and Calendar date-navigation icons use the accent color', () => {
+  const meals = read('../public/styles/meals.css');
+  const calendar = read('../public/styles/calendar.css');
+
+  assert.match(cssRuleBody(meals, '.week-nav .btn--icon'), /color:\s*var\(--color-accent\)/);
+  assert.match(cssRuleBody(calendar, '.cal-toolbar__nav .btn--icon'), /color:\s*var\(--color-accent\)/);
 });
 
 test('calendar attachment removal control honors its hidden state', () => {

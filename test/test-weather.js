@@ -146,6 +146,25 @@ test('per-user override beats household coords', async () => {
   } finally { await close(); }
 });
 
+test('per-user Open-Meteo coords work without household provider', async () => {
+  const { baseUrl, close } = await startApp({
+    db: {
+      'weather_lat:user:7': '52.52',
+      'weather_lon:user:7': '13.41',
+      'weather_city:user:7': 'Berlin',
+      'weather_units:user:7': 'imperial',
+    },
+    fetchFn: OM_FETCH,
+    userId: 7,
+  });
+  try {
+    const { body } = await getJson(baseUrl);
+    assert.equal(body.data.provider, 'open-meteo');
+    assert.equal(body.data.city, 'Berlin');
+    assert.equal(body.data.units, 'imperial');
+  } finally { await close(); }
+});
+
 test('falls back to household coords when user has no override', async () => {
   const { baseUrl, close } = await startApp({
     db: { weather_provider: 'open-meteo', weather_lat: '48.14', weather_lon: '11.58', weather_city: 'München' },

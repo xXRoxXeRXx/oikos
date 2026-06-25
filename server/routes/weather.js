@@ -107,6 +107,9 @@ export function buildRouter({ cfgGet: cfgGetFn = cfgGet, fetchFn = null } = {}) 
       } else if (dbProvider === 'openweathermap' && owmKey) {
         provider = 'openweathermap';
         units = dbUnits !== 'metric' ? dbUnits : (process.env.OPENWEATHER_UNITS ?? 'metric');
+      } else if (!dbProvider && dbLat && dbLon) {
+        provider = 'open-meteo';
+        lat = dbLat; lon = dbLon; city = dbCity; units = dbUnits;
       } else if (!dbProvider && envLat && envLon) {
         provider = 'open-meteo';
         lat = envLat; lon = envLon; city = envCity; units = envUnits;

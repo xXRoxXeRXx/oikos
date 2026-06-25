@@ -61,8 +61,8 @@
   gap: var(--space-1);
 }
 
-.cal-toolbar__nav .btn {
-  color: var(--color-text-secondary);
+.cal-toolbar__nav .btn--icon {
+  color: var(--color-accent);
 }
 
 .cal-toolbar__label {
