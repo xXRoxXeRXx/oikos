@@ -10,7 +10,7 @@ node tools/installer/install-server.js
 # Open http://localhost:8090
 ```
 
-Requires Node.js 18+ on the host. The browser-based wizard is fully localized (19 languages, auto-detected from your browser), detects your container engine (Docker or Podman) first, then configures your `.env` — including optional reverse-proxy/HTTPS, Single Sign-On (OIDC), and automatic backups — starts the container, and creates your admin account. The engine still runs the app itself.
+Requires Node.js 18+ on the host. The browser-based wizard is fully localized (20 languages, auto-detected from your browser), detects your container engine (Docker or Podman) first, then configures your `.env` — including optional reverse-proxy/HTTPS, Single Sign-On (OIDC), and automatic backups — starts the container, and creates your admin account. The engine still runs the app itself.
 
 ### Option B — CLI Installer (Linux / macOS)
 
@@ -19,9 +19,9 @@ git clone https://github.com/ulsklyc/yuvomi.git && cd yuvomi
 bash install.sh
 ```
 
-The script checks prerequisites, generates security keys, configures optional integrations, starts the container (Docker or Podman — auto-detected), and creates your admin account. Like the web installer, it is fully localized in 19 languages and auto-detects yours from the shell environment (`LANG`/`LC_ALL`).
+The script checks prerequisites, generates security keys, configures optional integrations, starts the container (Docker or Podman — auto-detected), and creates your admin account. Like the web installer, it is fully localized in 20 languages and auto-detects yours from the shell environment (`LANG`/`LC_ALL`).
 
-Force a specific language with `--lang` (one of `de en es fr it sv el ru tr zh ja ar hi pt uk pl nl vi`):
+Force a specific language with `--lang` (one of `de en es fr it sv el ru tr zh ja ar hi pt uk pl nl cs vi hu`):
 
 ```bash
 bash install.sh --lang de
@@ -168,7 +168,7 @@ node tools/installer/install-server.js
 
 #### 3. Open the Wizard
 
-Open your browser and navigate to **http://localhost:8090**. The wizard detects your browser language (19 languages supported), verifies that a container engine is available (Docker with Compose v2, or Podman with `podman compose` / `podman-compose`), and reports any existing `.env` file or running container before you start. It then guides you through:
+Open your browser and navigate to **http://localhost:8090**. The wizard detects your browser language (20 languages supported), verifies that a container engine is available (Docker with Compose v2, or Podman with `podman compose` / `podman-compose`), and reports any existing `.env` file or running container before you start. It then guides you through:
 
 - Basics — timezone (`TZ`) and HTTP host port (`OIKOS_HTTP_PORT`)
 - Security key generation (`SESSION_SECRET`, `DB_ENCRYPTION_KEY`)
@@ -402,6 +402,56 @@ Generate a secure `SESSION_SECRET`:
 openssl rand -hex 32
 ```
 
+### Web Push (Optional)
+
+Push notifications deliver due reminders to a device as system notifications even when the app
+is closed. **Requires HTTPS** (the Push API and service workers only work over a secure origin —
+see [HTTPS / Reverse Proxy](#https--reverse-proxy-nginx)). Each device opts in under
+Settings → Personal → Notifications.
+
+Admins can also add household Gotify or ntfy channels on the same settings page. These channels
+are configured in the UI and do not require environment variables. The Yuvomi backend container or
+host must be able to reach the configured Gotify/ntfy base URL. HTTPS is recommended; HTTP is
+accepted for trusted internal networks such as a private LAN or container network.
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `VAPID_PUBLIC_KEY` | VAPID public key. Auto-generated on first use and stored in the database if unset. | auto | No |
+| `VAPID_PRIVATE_KEY` | VAPID private key. Set together with the public key to pin a fixed pair across redeployments. | auto | No |
+| `VAPID_SUBJECT` | Contact URI (`mailto:` or `https:`) sent to push services. | `mailto:admin@localhost` | No |
+
+Generate a fixed key pair (optional):
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+### Email / SMTP (Optional)
+
+Configuring an outgoing SMTP server enables the self-service **"Forgot password"** flow on the
+login page. Without it, only an admin can reset another user's password. Can also be configured
+in Settings → Administration → Email (non-empty env values here override the database).
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `EMAIL_SMTP_HOST` | SMTP server hostname. | - | No |
+| `EMAIL_SMTP_PORT` | SMTP server port. | `587` | No |
+| `EMAIL_SMTP_SECURE` | Connection security: `ssl`, `starttls`, or `none`. | `starttls` | No |
+| `EMAIL_SMTP_USER` | SMTP auth username. | - | No |
+| `EMAIL_SMTP_PASS` | SMTP auth password. | - | No |
+| `EMAIL_FROM_ADDRESS` | Sender email address. | - | No |
+| `EMAIL_FROM_NAME` | Sender display name. | `Yuvomi` | No |
+| `BASE_URL` | Absolute origin used to build password-reset links and calendar export-feed URLs, e.g. `https://yuvomi.example.com`. **Required for reset emails to be sent** — the request `Host` header is never trusted as a fallback, to prevent reset-link poisoning. The export feed falls back to the request's protocol/host when unset. | - | No* |
+
+\* Not required to start Yuvomi, but without it the "Forgot password" flow silently sends no email
+even when SMTP is otherwise configured.
+
+The "Test connection" button in Settings → Administration → Email verifies the SMTP connection and
+sends a probe email to the signed-in admin's own linked address. The SMTP password is never
+returned by the API once saved; it is stored in the database the same way as other integration
+credentials (e.g. the Apple app-specific password), with encryption-at-rest available via the
+optional `DB_ENCRYPTION_KEY`.
+
 ### Database & Storage
 
 | Variable | Description | Default | Required |
@@ -455,7 +505,7 @@ PUT/GET/DELETE roundtrip in the target folder.
 
 ### Weather (Optional)
 
-The weather widget defaults to **Open-Meteo** — free, ECMWF-backed, and requiring **no API key**. Just set your coordinates (find them on [openstreetmap.org](https://www.openstreetmap.org) or Google Maps). You can also configure this in-app under **Settings → Modules → Overview** (admin only), which takes precedence over the environment variables.
+The weather widget defaults to **Open-Meteo** — free, ECMWF-backed, and requiring **no API key**. Just set your coordinates (find them on [openstreetmap.org](https://www.openstreetmap.org) or Google Maps). You can also configure this in-app under **Settings → Modules → Overview** (admin only), which takes precedence over the environment variables and acts as the household default. Any user can additionally set their own personal location under **Settings → Personal → My Weather**, which overrides the household default just for their own dashboard widget.
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
@@ -510,6 +560,19 @@ Enable single sign-on via any OpenID Connect provider (Authentik, Keycloak, Goog
 | `OIDC_TRUST_EMAIL_WITHOUT_VERIFIED_CLAIM` | Set to `true` to allow account linking when the IdP omits the `email_verified` claim entirely. Only enable for IdPs fully under your control that never issue unverified addresses (e.g. older Authentik without an explicit `email_verified` property mapping). | - | No |
 
 When all four OIDC variables are set, a **"Sign in with SSO"** button appears on the login page. The flow uses Authorization Code + PKCE (S256) with a nonce. On first login, the user is matched by their OIDC `sub`. If no match exists, an existing local account is linked automatically **only when the provider reports a verified email (`email_verified: true`) and exactly one local account holds that email address**; otherwise a new account is provisioned. Unverified or ambiguous emails never take over an existing account. If your provider omits the `email_verified` claim, set `OIDC_TRUST_EMAIL_WITHOUT_VERIFIED_CLAIM=true` to enable linking.
+
+### Subscription Currency Conversion (Optional)
+
+Budget → Subscriptions works fully without external services. Fixer can optionally provide live
+exchange rates; this sends only currency codes to the configured provider.
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `FIXER_API_KEY` | Fixer API key for live currency conversion. Rates are cached for 12 hours. | — | No |
+
+Logo discovery fetches only public HTTPS sites, rejects private/link-local targets, does not execute
+page scripts, and stores only a size-limited image. Service-name logo searches derive likely public
+domains and inspect those sites directly; they do not scrape search-engine image results.
 
 ### Automated Backups (Optional)
 

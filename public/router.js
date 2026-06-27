@@ -8,6 +8,7 @@ import { api, auth } from '/api.js';
 import { initI18n, getLocale, t } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { init as initReminders, stop as stopReminders } from '/reminders.js';
+import { initPush, stopPush } from '/push.js';
 import { isKitchenRoute, getLastKitchenRoute } from '/utils/kitchen-tabs.js';
 import { buildHelpRows } from '/utils/help.js';
 import { NAV_ICONS } from '/nav-icons.js';
@@ -25,6 +26,8 @@ import {
 const ROUTES = [
   { path: '/login',    page: '/pages/login.js',    requiresAuth: false, module: null        },
   { path: '/setup',    page: '/pages/setup.js',    requiresAuth: false, module: null        },
+  { path: '/forgot-password', page: '/pages/forgot-password.js', requiresAuth: false, module: null },
+  { path: '/reset-password',  page: '/pages/reset-password.js',  requiresAuth: false, module: null },
   { path: '/',         page: '/pages/dashboard.js', requiresAuth: true, module: 'dashboard' },
   { path: '/tasks',    page: '/pages/tasks.js',     requiresAuth: true, module: 'tasks'     },
   { path: '/shopping', page: '/pages/shopping.js',  requiresAuth: true, module: 'shopping'  },
@@ -177,6 +180,7 @@ const NAV_SECTION_LABEL_KEYS = Object.freeze({
   [NAV_SECTION.overview]: 'nav.sectionOverview',
   [NAV_SECTION.plan]: 'nav.sectionPlan',
   [NAV_SECTION.home]: 'nav.sectionHome',
+  [NAV_SECTION.customModules]: 'nav.sectionCustomModules',
 });
 
 const DEFAULT_APP_NAME = 'Yuvomi';
@@ -347,6 +351,7 @@ async function navigate(path, userOrPushState = true, pushState = true) {
       if (currentUser && currentUser.access_scope !== 'split_guest') {
         loadReminderStyles();
         initReminders();
+        initPush();
       }
     } else {
       pushState = userOrPushState;
@@ -402,6 +407,7 @@ async function navigate(path, userOrPushState = true, pushState = true) {
         if (currentUser && currentUser.access_scope !== 'split_guest') {
           loadReminderStyles();
           initReminders();
+          initPush();
         }
       } catch {
         currentPath = null; // Reset damit navigate('/login') nicht geblockt wird
@@ -1385,8 +1391,8 @@ function navItems() {
       module: `third-party-${module.id}`,
       accent: module.accent,
       order: module.menu.order ?? 1000,
-      // Drittanbieter-Module folgen dem bestehenden Platzierungsverhalten am Ende der Home-Sektion.
-      section: NAV_SECTION.home,
+      orderId: `third-party-${module.id}`,
+      section: NAV_SECTION.customModules,
     }))
     .sort((a, b) => a.order - b.order || a.label.localeCompare(b.label));
   const settings = baseItems.find((item) => item.module === 'settings');
@@ -2079,6 +2085,7 @@ window.addEventListener('auth:expired', () => {
   currentUser = null;
   stopThirdPartyModulePolling();
   stopReminders();
+  stopPush();
   if (isNavigating) {
     // navigate('/login') kann nicht sofort aufgerufen werden - wird im finally-Block
     // der laufenden Navigation nachgeholt.

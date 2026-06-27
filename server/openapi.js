@@ -165,6 +165,56 @@ function buildPaths() {
         },
       }),
     },
+    '/api/v1/auth/forgot-password': {
+      post: op({
+        summary: 'Request a password-reset link',
+        description: 'Always responds 200 with a generic body to prevent account enumeration. '
+          + 'A reset email is sent only when the account exists, has a linked email, SMTP is configured, and BASE_URL is set.',
+        tag: 'Auth',
+        auth: false,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['identifier'],
+                properties: { identifier: { type: 'string', description: 'Username or email address.' } },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Generic acknowledgement (sent regardless of whether the account exists).' },
+        },
+      }),
+    },
+    '/api/v1/auth/reset-password': {
+      post: op({
+        summary: 'Set a new password using a reset token',
+        tag: 'Auth',
+        auth: false,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['token', 'password'],
+                properties: {
+                  token: { type: 'string' },
+                  password: { type: 'string', minLength: 8 },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Password updated.' },
+          400: { $ref: '#/components/responses/BadRequest' },
+        },
+      }),
+    },
     '/api/v1/auth/me': {
       get: op({
         summary: 'Get current authenticated user',
@@ -254,6 +304,58 @@ function buildPaths() {
         admin: true,
         stateChanging: true,
         params: [idParam('id', 'API token ID')],
+      }),
+    },
+    '/api/v1/email/config': {
+      get: op({
+        summary: 'Get SMTP email configuration (password masked)',
+        tag: 'Email',
+        admin: true,
+      }),
+      put: op({
+        summary: 'Update SMTP email configuration',
+        tag: 'Email',
+        admin: true,
+        stateChanging: true,
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  host: { type: 'string' },
+                  port: { type: 'integer' },
+                  secure: { type: 'string', enum: ['ssl', 'starttls', 'none'] },
+                  user: { type: 'string' },
+                  pass: { type: 'string', description: 'Write-only. Omit to keep the stored password.' },
+                  clearPassword: { type: 'boolean' },
+                  fromAddress: { type: 'string' },
+                  fromName: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      }),
+    },
+    '/api/v1/email/test': {
+      post: op({
+        summary: 'Send a test email to validate SMTP settings',
+        tag: 'Email',
+        admin: true,
+        stateChanging: true,
+        requestBody: {
+          required: false,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: { to: { type: 'string', description: 'Optional recipient override; defaults to the admin\'s linked email.' } },
+              },
+            },
+          },
+        },
       }),
     },
     '/api/v1/family/members': {
@@ -557,9 +659,23 @@ function buildPaths() {
       get: op({ summary: 'List budget categories', tag: 'Budget', params: [langParam()] }),
       post: op({ summary: 'Create budget category', tag: 'Budget', stateChanging: true, requestBody: jsonBody(null) }),
     },
+    '/api/v1/budget/categories/reorder': {
+      patch: op({ summary: 'Reorder budget categories', tag: 'Budget', stateChanging: true, requestBody: jsonBody(null) }),
+    },
+    '/api/v1/budget/categories/{key}': {
+      put: op({ summary: 'Rename budget category', tag: 'Budget', params: [{ name: 'key', in: 'path', required: true, schema: { type: 'string' } }], stateChanging: true, requestBody: jsonBody(null) }),
+      delete: op({ summary: 'Delete budget category', tag: 'Budget', params: [{ name: 'key', in: 'path', required: true, schema: { type: 'string' } }], stateChanging: true }),
+    },
     '/api/v1/budget/categories/{categoryKey}/subcategories': {
       get: op({ summary: 'List subcategories for a budget category', tag: 'Budget', params: [{ name: 'categoryKey', in: 'path', required: true, schema: { type: 'string' } }, langParam()] }),
       post: op({ summary: 'Create budget subcategory', tag: 'Budget', params: [{ name: 'categoryKey', in: 'path', required: true, schema: { type: 'string' } }], stateChanging: true, requestBody: jsonBody(null) }),
+    },
+    '/api/v1/budget/categories/{key}/subcategories/reorder': {
+      patch: op({ summary: 'Reorder budget subcategories', tag: 'Budget', params: [{ name: 'key', in: 'path', required: true, schema: { type: 'string' } }], stateChanging: true, requestBody: jsonBody(null) }),
+    },
+    '/api/v1/budget/categories/{key}/subcategories/{subKey}': {
+      put: op({ summary: 'Rename budget subcategory', tag: 'Budget', params: [{ name: 'key', in: 'path', required: true, schema: { type: 'string' } }, { name: 'subKey', in: 'path', required: true, schema: { type: 'string' } }], stateChanging: true, requestBody: jsonBody(null) }),
+      delete: op({ summary: 'Delete budget subcategory', tag: 'Budget', params: [{ name: 'key', in: 'path', required: true, schema: { type: 'string' } }, { name: 'subKey', in: 'path', required: true, schema: { type: 'string' } }], stateChanging: true }),
     },
     '/api/v1/budget': {
       get: op({ summary: 'List budget entries', tag: 'Budget' }),
@@ -568,6 +684,27 @@ function buildPaths() {
     '/api/v1/budget/{id}': {
       put: op({ summary: 'Update budget entry', tag: 'Budget', params: [idParam()], stateChanging: true, requestBody: jsonBody(null) }),
       delete: op({ summary: 'Delete budget entry', tag: 'Budget', params: [idParam()], stateChanging: true }),
+    },
+    '/api/v1/budget/subscriptions': {
+      get: op({ summary: 'List subscriptions with normalized costs and analytics', tag: 'Budget' }),
+      post: op({ summary: 'Create subscription', tag: 'Budget', stateChanging: true, requestBody: jsonBody(null) }),
+    },
+    '/api/v1/budget/subscriptions/meta': {
+      get: op({ summary: 'Get subscription categories, payment methods, and billing cycles', tag: 'Budget' }),
+    },
+    '/api/v1/budget/subscriptions/settings': {
+      get: op({ summary: 'Get subscription budget and base currency', tag: 'Budget' }),
+      put: op({ summary: 'Update subscription budget and base currency', tag: 'Budget', stateChanging: true, requestBody: jsonBody(null) }),
+    },
+    '/api/v1/budget/subscriptions/logo-search': {
+      post: op({ summary: 'Find selectable logo options from a website URL or service name', tag: 'Budget', stateChanging: true, requestBody: jsonBody(null) }),
+    },
+    '/api/v1/budget/subscriptions/{id}/renew': {
+      post: op({ summary: 'Advance a subscription to its next renewal date', tag: 'Budget', params: [idParam()], stateChanging: true }),
+    },
+    '/api/v1/budget/subscriptions/{id}': {
+      put: op({ summary: 'Update subscription', tag: 'Budget', params: [idParam()], stateChanging: true, requestBody: jsonBody(null) }),
+      delete: op({ summary: 'Delete subscription', tag: 'Budget', params: [idParam()], stateChanging: true }),
     },
     '/api/v1/documents/meta/options': {
       get: op({
@@ -972,6 +1109,74 @@ function buildPaths() {
       put: op({ summary: 'Update guest account', tag: 'SplitExpenses', params: [idParam()], stateChanging: true, requestBody: jsonBody(null) }),
       delete: op({ summary: 'Delete guest account', tag: 'SplitExpenses', params: [idParam()], stateChanging: true }),
     },
+    '/api/v1/push/vapid-public-key': { get: op({ summary: 'Get VAPID public key', tag: 'Push' }) },
+    '/api/v1/push/subscribe': { post: op({ summary: 'Register a push subscription', tag: 'Push', stateChanging: true, requestBody: jsonBody(null) }) },
+    '/api/v1/push/unsubscribe': { post: op({ summary: 'Remove a push subscription', tag: 'Push', stateChanging: true, requestBody: jsonBody(null) }) },
+    '/api/v1/push/test': { post: op({ summary: 'Send a test push to the current user', tag: 'Push', stateChanging: true }) },
+    '/api/v1/notifications/providers': {
+      get: op({
+        summary: 'List supported notification channel providers',
+        tag: 'Notifications',
+        admin: true,
+      }),
+    },
+    '/api/v1/notifications/channels': {
+      get: op({
+        summary: 'List household notification channels',
+        tag: 'Notifications',
+        admin: true,
+        responses: {
+          200: {
+            description: 'Notification channels with secrets omitted',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/NotificationChannelListResponse' } } },
+          },
+          403: { $ref: '#/components/responses/Forbidden' },
+          500: { $ref: '#/components/responses/InternalServerError' },
+        },
+      }),
+      post: op({
+        summary: 'Create a household notification channel',
+        tag: 'Notifications',
+        admin: true,
+        stateChanging: true,
+        requestBody: jsonBody('#/components/schemas/NotificationChannelInput'),
+        responses: {
+          201: {
+            description: 'Notification channel created',
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/NotificationChannelResponse' } } },
+          },
+          400: { $ref: '#/components/responses/BadRequest' },
+          403: { $ref: '#/components/responses/Forbidden' },
+          500: { $ref: '#/components/responses/InternalServerError' },
+        },
+      }),
+    },
+    '/api/v1/notifications/channels/{id}': {
+      put: op({
+        summary: 'Update a household notification channel',
+        tag: 'Notifications',
+        admin: true,
+        stateChanging: true,
+        params: [idParam()],
+        requestBody: jsonBody('#/components/schemas/NotificationChannelInput'),
+      }),
+      delete: op({
+        summary: 'Delete a household notification channel',
+        tag: 'Notifications',
+        admin: true,
+        stateChanging: true,
+        params: [idParam()],
+      }),
+    },
+    '/api/v1/notifications/channels/{id}/test': {
+      post: op({
+        summary: 'Send a test notification through a channel',
+        tag: 'Notifications',
+        admin: true,
+        stateChanging: true,
+        params: [idParam()],
+      }),
+    },
   };
 }
 
@@ -1005,6 +1210,9 @@ function buildOpenApiSpec(req, appVersion) {
       { name: 'Preferences' },
       { name: 'Reminders' },
       { name: 'Search' },
+      { name: 'Push' },
+      { name: 'Email' },
+      { name: 'Notifications' },
     ],
     paths: buildPaths(),
     components: {
@@ -1052,6 +1260,62 @@ function buildOpenApiSpec(req, appVersion) {
             error: { type: 'string' },
             code: { type: 'integer' },
             storage_code: { $ref: '#/components/schemas/DocumentStorageErrorCode' },
+          },
+        },
+        NotificationChannel: {
+          type: 'object',
+          description: 'A Gotify or ntfy notification channel. Secrets are write-only and never returned.',
+          properties: {
+            id: { type: 'integer' },
+            provider: { type: 'string', enum: ['gotify', 'ntfy'] },
+            name: { type: 'string' },
+            enabled: { type: 'boolean' },
+            scope: { type: 'string', enum: ['household', 'user'] },
+            userId: { type: ['integer', 'null'] },
+            config: { type: 'object', additionalProperties: true },
+            secretSet: { type: 'boolean' },
+            lastTestAt: { type: ['string', 'null'], format: 'date-time' },
+            lastSuccessAt: { type: ['string', 'null'], format: 'date-time' },
+            lastError: { type: ['string', 'null'] },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        NotificationChannelInput: {
+          type: 'object',
+          required: ['provider', 'name', 'config'],
+          properties: {
+            provider: { type: 'string', enum: ['gotify', 'ntfy'] },
+            name: { type: 'string' },
+            enabled: { type: 'boolean' },
+            config: {
+              type: 'object',
+              description: 'Provider config. Gotify uses baseUrl and priority. ntfy uses baseUrl, topic, priority, and authType.',
+              additionalProperties: true,
+            },
+            secrets: {
+              type: 'object',
+              description: 'Write-only provider credentials. Omit fields to keep stored secrets on update.',
+              additionalProperties: true,
+            },
+            clearSecrets: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Explicit secret field names to clear.',
+            },
+          },
+        },
+        NotificationChannelResponse: {
+          type: 'object',
+          properties: { data: { $ref: '#/components/schemas/NotificationChannel' } },
+        },
+        NotificationChannelListResponse: {
+          type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/NotificationChannel' },
+            },
           },
         },
         DocumentStorageErrorCode: {
@@ -1444,6 +1708,7 @@ function buildOpenApiSpec(req, appVersion) {
           properties: {
             username: { type: 'string' },
             display_name: { type: 'string' },
+            password: { type: 'string', description: 'Write-only. Omit or leave empty to keep the current password.' },
             avatar_color: { type: 'string' },
             avatar_data: { type: ['string', 'null'], description: 'PNG, JPEG, or WebP data URL. Use null to remove.' },
             family_role: { type: 'string', enum: ['dad', 'mom', 'parent', 'child', 'grandparent', 'relative', 'other'] },

@@ -33,7 +33,9 @@ const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 const COUNTRY_ISO_RE = /^[A-Z]{2}$/;
 const SUBDIVISION_RE = /^[A-Z]{2}-[A-Z0-9-]{1,10}$/;
 
-const VALID_WIDGET_IDS = ['tasks', 'calendar', 'weather', 'meals', 'shopping', 'birthdays', 'budget', 'family', 'notes'];
+// Order defines the default dashboard layout (weather first, then primary content).
+// Must stay in sync with WIDGET_IDS in public/pages/dashboard.js.
+const VALID_WIDGET_IDS = ['weather', 'tasks', 'calendar', 'meals', 'shopping', 'birthdays', 'budget', 'family', 'notes'];
 const VALID_WIDGET_SIZES = ['1x1', '1x2', '1x3', '1x4', '2x1', '2x2', '2x3', '2x4', '3x1', '3x2', '3x3', '3x4', '4x1', '4x2', '4x3', '4x4'];
 
 // Modul-Slugs, die per Settings deaktiviert werden können.
@@ -94,6 +96,18 @@ function cfgUserGet(key, userId) {
 function cfgUserSet(key, userId, value) {
   if (!userId) return;
   cfgSet(userCfgKey(key, userId), value);
+}
+
+// Per-User-Wetter-Override lesen (null je Feld = erbt Haushalt).
+function weatherUserOverride(userId) {
+  const autoRaw = cfgUserGet('weather_auto_locate', userId);
+  return {
+    lat:   cfgUserGet('weather_lat', userId),
+    lon:   cfgUserGet('weather_lon', userId),
+    city:  cfgUserGet('weather_city', userId),
+    units: cfgUserGet('weather_units', userId),
+    auto_locate: autoRaw === null ? null : autoRaw === '1',
+  };
 }
 
 // --------------------------------------------------------
@@ -213,6 +227,8 @@ router.get('/', (req, res) => {
         weather_lon:      cfgGet('weather_lon')      ?? null,
         weather_city:     cfgGet('weather_city')     ?? '',
         weather_units:    cfgGet('weather_units')    ?? 'metric',
+        weather_auto_locate: cfgGet('weather_auto_locate') === '1',
+        weather_user: weatherUserOverride(req.authUserId),
         holiday_country:       cfgGet('holiday_country')       ?? null,
         holiday_subdivision:   cfgGet('holiday_subdivision')   ?? null,
         holiday_show_public:   cfgGet('holiday_show_public')   === '1',
@@ -237,7 +253,7 @@ router.get('/', (req, res) => {
 
 router.put('/', (req, res) => {
   try {
-    const { visible_meal_types, currency, date_format, time_format, app_name, dashboard_widgets, disabled_modules, module_order, mobile_nav_order, housekeeping_payment_tasks, weather_provider, weather_lat, weather_lon, weather_city, weather_units, holiday_country, holiday_subdivision, holiday_show_public, holiday_show_school, holiday_public_color, holiday_school_color } = req.body;
+    const { visible_meal_types, currency, date_format, time_format, app_name, dashboard_widgets, disabled_modules, module_order, mobile_nav_order, housekeeping_payment_tasks, weather_provider, weather_lat, weather_lon, weather_city, weather_units, weather_auto_locate, weather_user, holiday_country, holiday_subdivision, holiday_show_public, holiday_show_school, holiday_public_color, holiday_school_color } = req.body;
 
     if (visible_meal_types !== undefined) {
       if (!Array.isArray(visible_meal_types)) {
@@ -331,7 +347,8 @@ router.put('/', (req, res) => {
       weather_lat      !== undefined ||
       weather_lon      !== undefined ||
       weather_city     !== undefined ||
-      weather_units    !== undefined
+      weather_units    !== undefined ||
+      weather_auto_locate !== undefined
     ) {
       if (req.authRole !== 'admin') {
         return res.status(403).json({ error: 'Admin access required.', code: 403 });
@@ -367,6 +384,68 @@ router.put('/', (req, res) => {
           return res.status(400).json({ error: `Ungültige Einheit. Erlaubt: ${VALID_WEATHER_UNITS.join(', ')}`, code: 400 });
         }
         cfgSet('weather_units', weather_units);
+      }
+      if (weather_auto_locate !== undefined) {
+        if (typeof weather_auto_locate !== 'boolean') {
+          return res.status(400).json({ error: 'weather_auto_locate muss ein Boolean sein.', code: 400 });
+        }
+        cfgSet('weather_auto_locate', weather_auto_locate ? '1' : '0');
+      }
+    }
+
+    // Per-User-Wetter-Override — von jedem authentifizierten Nutzer schreibbar.
+    if (weather_user !== undefined) {
+      if (typeof weather_user !== 'object' || weather_user === null || Array.isArray(weather_user)) {
+        return res.status(400).json({ error: 'weather_user muss ein Objekt sein.', code: 400 });
+      }
+      const uid = req.authUserId;
+      if (!uid) {
+        return res.status(401).json({ error: 'Authentifizierung erforderlich.', code: 401 });
+      }
+      const { lat, lon, city, units, auto_locate } = weather_user;
+
+      if (lat !== undefined) {
+        if (lat === null) cfgDelete(userCfgKey('weather_lat', uid));
+        else {
+          const v = parseFloat(lat);
+          if (isNaN(v) || v < -90 || v > 90) {
+            return res.status(400).json({ error: 'Ungültiger Breitengrad (–90 bis 90).', code: 400 });
+          }
+          cfgUserSet('weather_lat', uid, String(v));
+        }
+      }
+      if (lon !== undefined) {
+        if (lon === null) cfgDelete(userCfgKey('weather_lon', uid));
+        else {
+          const v = parseFloat(lon);
+          if (isNaN(v) || v < -180 || v > 180) {
+            return res.status(400).json({ error: 'Ungültiger Längengrad (–180 bis 180).', code: 400 });
+          }
+          cfgUserSet('weather_lon', uid, String(v));
+        }
+      }
+      if (city !== undefined) {
+        const trimmed = city === null ? '' : String(city).slice(0, 100).trim();
+        if (trimmed) cfgUserSet('weather_city', uid, trimmed);
+        else cfgDelete(userCfgKey('weather_city', uid));
+      }
+      if (units !== undefined) {
+        if (units === null) cfgDelete(userCfgKey('weather_units', uid));
+        else {
+          if (!VALID_WEATHER_UNITS.includes(units)) {
+            return res.status(400).json({ error: `Ungültige Einheit. Erlaubt: ${VALID_WEATHER_UNITS.join(', ')}`, code: 400 });
+          }
+          cfgUserSet('weather_units', uid, units);
+        }
+      }
+      if (auto_locate !== undefined) {
+        if (auto_locate === null) cfgDelete(userCfgKey('weather_auto_locate', uid));
+        else {
+          if (typeof auto_locate !== 'boolean') {
+            return res.status(400).json({ error: 'weather_user.auto_locate muss ein Boolean sein.', code: 400 });
+          }
+          cfgUserSet('weather_auto_locate', uid, auto_locate ? '1' : '0');
+        }
       }
     }
 
@@ -455,6 +534,8 @@ router.put('/', (req, res) => {
         weather_lon:      cfgGet('weather_lon')      ?? null,
         weather_city:     cfgGet('weather_city')     ?? '',
         weather_units:    cfgGet('weather_units')    ?? 'metric',
+        weather_auto_locate: cfgGet('weather_auto_locate') === '1',
+        weather_user: weatherUserOverride(req.authUserId),
         holiday_country:       cfgGet('holiday_country')       ?? null,
         holiday_subdivision:   cfgGet('holiday_subdivision')   ?? null,
         holiday_show_public:   cfgGet('holiday_show_public')   === '1',

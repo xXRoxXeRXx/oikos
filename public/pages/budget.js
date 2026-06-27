@@ -6,14 +6,16 @@
  */
 
 import { api } from '/api.js';
-import { openModal as openSharedModal, closeModal, confirmModal } from '/components/modal.js';
+import { openModal as openSharedModal, closeModal, confirmModal, advancedSection } from '/components/modal.js';
 import { stagger, vibrate } from '/utils/ux.js';
 import { t, formatDate, getLocale } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { renderSkeletonList } from '/utils/skeleton.js';
 import { render as renderSplitExpenses } from '/pages/split-expenses.js';
+import { openSubscriptionModal, render as renderSubscriptions } from '/pages/subscriptions.js';
 import { toLocalDateKey } from '/utils/date.js';
 import { budgetCategoryLabel } from '/utils/category-labels.js';
+import '/components/category-manager.js';
 
 // --------------------------------------------------------
 // Konstanten
@@ -54,6 +56,12 @@ const SUBCATEGORY_I18N = () => ({
   insurance_other:          t('budget.subcatInsuranceOther'),
   investments:              t('budget.subcatInvestments'),
   taxes:                    t('budget.subcatTaxes'),
+  subscription_entertainment: t('budget.subcatSubscriptionEntertainment'),
+  subscription_productivity:  t('budget.subcatSubscriptionProductivity'),
+  subscription_utilities:     t('budget.subcatSubscriptionUtilities'),
+  subscription_health:        t('budget.subcatSubscriptionHealth'),
+  subscription_education:     t('budget.subcatSubscriptionEducation'),
+  subscription_other:         t('budget.subcatSubscriptionOther'),
 });
 
 function categoryLabel(category) {
@@ -229,6 +237,9 @@ export async function render(container, { user }) {
             <button class="budget-tab" id="budget-tab-budget" type="button" role="tab" aria-selected="true" data-tab="budget">
               ${t('budget.budgetTab')}
             </button>
+            <button class="budget-tab" id="budget-tab-subscriptions" type="button" role="tab" aria-selected="false" data-tab="subscriptions">
+              ${t('subscriptions.tabLabel')}
+            </button>
             <button class="budget-tab" id="budget-tab-loans" type="button" role="tab" aria-selected="false" data-tab="loans">
               ${t('budget.loansTab')}
             </button>`}
@@ -291,6 +302,10 @@ function wireNav() {
       _container.querySelector('#split-add-expense')?.click();
       return;
     }
+    if (state.activeTab === 'subscriptions') {
+      openSubscriptionModal();
+      return;
+    }
     openBudgetModal({ mode: 'create' });
   };
   _container.querySelector('#budget-add').addEventListener('click', addHandler);
@@ -325,6 +340,13 @@ function renderBody() {
     setHtml(body, renderLoansPage());
     wireLoansPage();
     if (window.lucide) lucide.createIcons({ el: body });
+    return;
+  }
+  if (state.activeTab === 'subscriptions') {
+    setHtml(body, '<div class="budget-tab-panel budget-tab-panel--subscriptions" id="budget-subscriptions-panel"></div>');
+    renderSubscriptions(body.querySelector('#budget-subscriptions-panel'), { user: _user }).catch((err) => {
+      console.error('[Budget] subscriptions render error:', err);
+    });
     return;
   }
   if (state.activeTab === 'split-expenses') {
@@ -378,6 +400,10 @@ function renderBody() {
           <span class="budget-list-header__title">${t('budget.transactions')}</span>
         </div>
         <div class="budget-list-header__actions">
+        <button class="btn btn--icon btn--ghost" id="budget-manage-categories"
+          aria-label="${t('budget.manageCategories')}" title="${t('budget.manageCategories')}">
+          <i data-lucide="tags" class="icon-md" aria-hidden="true"></i>
+        </button>
         ${state.entries.length ? `
         <a href="/api/v1/budget/export?month=${state.month}" class="btn btn--secondary"
            style="font-size:var(--text-sm);padding:var(--space-1) var(--space-3);">
@@ -396,6 +422,7 @@ function renderBody() {
   _container.querySelector('#empty-cta-budget')?.addEventListener('click', () => {
     document.querySelector('.page-fab')?.click();
   });
+  _container.querySelector('#budget-manage-categories')?.addEventListener('click', openCategoryManager);
   stagger(_container.querySelector('#budget-list')?.querySelectorAll('.budget-entry') ?? []);
 
   _container.querySelector('#budget-list')?.addEventListener('click', async (e) => {
@@ -413,6 +440,7 @@ function renderBody() {
 function updateTabs() {
   _container.classList.toggle('budget-page--split-active', state.activeTab === 'split-expenses' || _user?.access_scope === 'split_guest');
   _container.classList.toggle('budget-page--loans-active', state.activeTab === 'loans');
+  _container.classList.toggle('budget-page--subscriptions-active', state.activeTab === 'subscriptions');
   _container.querySelectorAll('.budget-tab').forEach((tab) => {
     const active = tab.dataset.tab === state.activeTab;
     tab.classList.toggle('budget-tab--active', active);
@@ -420,18 +448,21 @@ function updateTabs() {
   });
   const splitActive = state.activeTab === 'split-expenses' || _user?.access_scope === 'split_guest';
   const loansActive = state.activeTab === 'loans';
+  const subscriptionsActive = state.activeTab === 'subscriptions';
   ['#budget-today', '#budget-label', '#budget-add'].forEach((selector) => {
     const el = _container.querySelector(selector);
-    if (el) el.hidden = splitActive;
+    if (el) el.hidden = splitActive || subscriptionsActive;
   });
   ['#budget-prev', '#budget-next'].forEach((selector) => {
     const el = _container.querySelector(selector);
-    if (el) el.hidden = splitActive || loansActive;
+    if (el) el.hidden = splitActive || loansActive || subscriptionsActive;
   });
   const fab = _container.querySelector('#fab-new-budget');
   if (fab) {
     fab.hidden = false;
-    fab.setAttribute('aria-label', splitActive ? t('splitExpenses.addExpense') : t('budget.newEntryFabLabel'));
+    fab.setAttribute('aria-label', splitActive
+      ? t('splitExpenses.addExpense')
+      : subscriptionsActive ? t('subscriptions.add') : t('budget.newEntryFabLabel'));
   }
 }
 
@@ -851,6 +882,35 @@ function formatEntryDate(dateStr) {
 // Modal
 // --------------------------------------------------------
 
+function openCategoryManager() {
+  let manager = null;
+  const onChanged = async () => {
+    await loadBudgetMeta();
+    renderBody();
+  };
+  openSharedModal({
+    title: t('budget.manageCategories'),
+    content: '<oikos-category-manager></oikos-category-manager>',
+    size: 'lg',
+    onSave: (panel) => {
+      manager = panel.querySelector('oikos-category-manager');
+      manager.addEventListener('category-manager-changed', onChanged);
+      manager.configure({
+        basePath: '/budget/categories',
+        groups: [
+          { key: 'expense', labelKey: 'budget.expenses', addLabelKey: 'budget.addCategory', subcategories: true },
+          { key: 'income',  labelKey: 'budget.income',   addLabelKey: 'budget.addCategory' },
+        ],
+        supportsSubcategories: true,
+        labelResolver: (item) => item.label ?? budgetCategoryLabel(item.key, item.name, t),
+        titleKey: 'budget.manageCategories',
+        hintKey: 'category.manageHint',
+      });
+    },
+    onClose: () => manager?.removeEventListener('category-manager-changed', onChanged),
+  });
+}
+
 function openBudgetModal({ mode, entry = null, initialType = '' }) {
   const isEdit = mode === 'edit';
   const today  = toLocalDateKey(new Date());
@@ -907,41 +967,45 @@ function openBudgetModal({ mode, entry = null, initialType = '' }) {
       <select class="form-input" id="bm-category">${catOpts}</select>
     </div>
 
-    <div class="form-group js-entry-field" id="bm-subcategory-group" ${isExpense ? '' : 'hidden'}>
-      <div class="budget-field-header">
-        <label class="form-label" for="bm-subcategory">${t('budget.subcategoryLabel')}</label>
-        <button class="btn btn--secondary budget-inline-add" type="button" id="bm-add-subcategory">${t('budget.addSubcategory')}</button>
-      </div>
-      <select class="form-input" id="bm-subcategory">${subcatOpts}</select>
-    </div>
-
     <div class="form-group js-entry-field">
       <label class="form-label" for="bm-date">${t('budget.dateLabel')}</label>
       <input type="date" class="form-input" id="bm-date"
              value="${isEdit ? entry.date : today}">
     </div>
 
-    <div class="form-group js-entry-field">
-      <label class="toggle">
-        <input type="checkbox" id="bm-recurring" ${isEdit && entry.is_recurring ? 'checked' : ''}>
-        <span class="toggle__track"></span>
-        <span>${t('budget.recurringLabel')}</span>
-      </label>
-    </div>
+    <div class="js-entry-field">
+      ${advancedSection(`
+        <div class="form-group" id="bm-subcategory-group" ${isExpense ? '' : 'hidden'}>
+          <div class="budget-field-header">
+            <label class="form-label" for="bm-subcategory">${t('budget.subcategoryLabel')}</label>
+            <button class="btn btn--secondary budget-inline-add" type="button" id="bm-add-subcategory">${t('budget.addSubcategory')}</button>
+          </div>
+          <select class="form-input" id="bm-subcategory">${subcatOpts}</select>
+        </div>
 
-    <div class="form-group js-entry-field" id="bm-recurrence-options" ${isEdit && entry.is_recurring ? '' : 'hidden'}>
-      <label class="form-label" for="bm-interval">${t('budget.recurringIntervalLabel')}</label>
-      <select class="form-input" id="bm-interval">
-        ${intervalOption('monthly', 'budget.intervalMonthly')}
-        ${intervalOption('half_year', 'budget.intervalHalfYear')}
-        ${intervalOption('yearly', 'budget.intervalYearly')}
-      </select>
-      <label class="toggle" style="margin-top:var(--space-3)">
-        <input type="checkbox" id="bm-virtual" ${isEdit && entry.recurrence_virtual ? 'checked' : ''}>
-        <span class="toggle__track"></span>
-        <span>${t('budget.virtualBudgetLabel')}</span>
-      </label>
-      <p style="color:var(--color-text-secondary);font-size:var(--text-sm);margin-top:var(--space-1)">${t('budget.virtualBudgetHint')}</p>
+        <div class="form-group">
+          <label class="toggle">
+            <input type="checkbox" id="bm-recurring" ${isEdit && entry.is_recurring ? 'checked' : ''}>
+            <span class="toggle__track"></span>
+            <span>${t('budget.recurringLabel')}</span>
+          </label>
+        </div>
+
+        <div class="form-group" id="bm-recurrence-options" ${isEdit && entry.is_recurring ? '' : 'hidden'}>
+          <label class="form-label" for="bm-interval">${t('budget.recurringIntervalLabel')}</label>
+          <select class="form-input" id="bm-interval">
+            ${intervalOption('monthly', 'budget.intervalMonthly')}
+            ${intervalOption('half_year', 'budget.intervalHalfYear')}
+            ${intervalOption('yearly', 'budget.intervalYearly')}
+          </select>
+          <label class="toggle" style="margin-top:var(--space-3)">
+            <input type="checkbox" id="bm-virtual" ${isEdit && entry.recurrence_virtual ? 'checked' : ''}>
+            <span class="toggle__track"></span>
+            <span>${t('budget.virtualBudgetLabel')}</span>
+          </label>
+          <p style="color:var(--color-text-secondary);font-size:var(--text-sm);margin-top:var(--space-1)">${t('budget.virtualBudgetHint')}</p>
+        </div>`,
+        { open: isEdit && (entry.is_recurring || !!entry.subcategory) })}
     </div>
 
     <div id="bm-loan-fields" hidden>

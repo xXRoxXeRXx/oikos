@@ -50,6 +50,10 @@
   text-align: center;
 }
 
+.week-nav .btn--icon {
+  color: var(--color-accent);
+}
+
 .week-nav__today {
   font-size: var(--text-sm);
   color: var(--color-accent);

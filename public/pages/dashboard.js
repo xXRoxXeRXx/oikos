@@ -124,8 +124,8 @@ function showOnboarding(appContainer) {
 // Widget-Definitionen (Reihenfolge = Standard-Layout)
 // --------------------------------------------------------
 
-// NEU — primäre Inhalte (tasks, calendar) ganz oben
-const WIDGET_IDS = ['tasks', 'calendar', 'weather', 'meals', 'shopping', 'birthdays', 'budget', 'family', 'notes'];
+// weather (kompaktes 2x1) ganz oben, danach primäre Inhalte (tasks, calendar)
+const WIDGET_IDS = ['weather', 'tasks', 'calendar', 'meals', 'shopping', 'birthdays', 'budget', 'family', 'notes'];
 
 const WIDGET_SIZE_PRESETS = [
   { value: '1x1', labelKey: 'dashboard.widgetSizeTiny'     },
@@ -211,6 +211,7 @@ const BUDGET_CATEGORY_LABEL_KEYS = {
   shopping_clothing: 'catShoppingClothing',
   education: 'catEducation',
   financial_other: 'catFinancialOther',
+  subscriptions: 'catSubscriptions',
   'Erwerbseinkommen': 'catEarnedIncome',
   'Kapitalerträge': 'catInvestmentIncome',
   'Geschenke & Transfers': 'catTransferGiftIncome',
@@ -1265,6 +1266,28 @@ function updateWidgetConfig(config, id, patch) {
 // Haupt-Render
 // --------------------------------------------------------
 
+// Dependencies injiziert, damit die Funktion ohne DOM/`navigator`-Globals testbar ist.
+export async function maybeUpdateAutoLocation({ autoLocateEnabled, geolocation, putPreferences }) {
+  if (!autoLocateEnabled || !geolocation) return false;
+  try {
+    const position = await new Promise((resolve, reject) => {
+      geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000 });
+    });
+    await putPreferences({
+      weather_user: {
+        lat: position.coords.latitude.toFixed(4),
+        lon: position.coords.longitude.toFixed(4),
+        // Stadt-Label gehört zu den alten Koordinaten — Override löschen, damit das Widget
+        // auf die "lat, lon"-Anzeige zurückfällt statt einen veralteten Namen zu zeigen.
+        city: null,
+      },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function render(container, { user }) {
   _fabController?.abort();
   _fabController = new AbortController();
@@ -1281,6 +1304,7 @@ export async function render(container, { user }) {
 
   let data         = { upcomingEvents: [], urgentTasks: [], todayMeals: [], pinnedNotes: [], shoppingLists: [], birthdays: [], users: [], budget: {} };
   let weather      = null;
+  let weatherAutoLocate = false;
   let widgetConfig = DEFAULT_WIDGET_CONFIG;
   let savedWidgetConfig = DEFAULT_WIDGET_CONFIG;
   let isCustomizing = false;
@@ -1293,6 +1317,7 @@ export async function render(container, { user }) {
     ]);
     data         = dashRes;
     weather      = weatherRes.data ?? null;
+    weatherAutoLocate = Boolean(prefsRes.data?.weather_user?.auto_locate ?? prefsRes.data?.weather_auto_locate);
     widgetConfig = normalizeDashboardConfig(prefsRes.data?.dashboard_widgets ?? DEFAULT_WIDGET_CONFIG);
     savedWidgetConfig = widgetConfig.map((w) => ({ ...w }));
     currency     = prefsRes.data?.currency ?? 'EUR';
@@ -1454,11 +1479,16 @@ export async function render(container, { user }) {
     if (dateEl)  dateEl.textContent = formatDate(new Date());
   }, { signal: _fabController.signal });
 
-  // 30-Minuten Auto-Refresh für Wetter
+  // 30-Minuten Auto-Refresh für Wetter (inkl. optionaler Standort-Aktualisierung)
   const refreshBtn = container.querySelector('#weather-refresh-btn');
   if (refreshBtn) {
     const doAutoRefresh = async () => {
       try {
+        await maybeUpdateAutoLocation({
+          autoLocateEnabled: weatherAutoLocate,
+          geolocation: navigator.geolocation,
+          putPreferences: (body) => api.put('/preferences', body),
+        });
         const res = await api.get(`/weather?lang=${encodeURIComponent(getLocale())}`).catch(() => ({ data: null }));
         weather = res.data ?? null;
         rebuildDashboard(widgetConfig);
@@ -1466,6 +1496,7 @@ export async function render(container, { user }) {
     };
     const timerId = setInterval(doAutoRefresh, 30 * 60 * 1000);
     _fabController.signal.addEventListener('abort', () => clearInterval(timerId));
+    if (weatherAutoLocate) doAutoRefresh();
   }
 
   if (!localStorage.getItem(ONBOARDING_KEY)) {

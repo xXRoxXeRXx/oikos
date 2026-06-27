@@ -37,7 +37,7 @@ import {
 import {
   persistCurrencySelection,
   SUPPORTED_CURRENCIES,
-} from '../public/settings/pages/modules-budget.js';
+} from '../public/settings/currency.js';
 import {
   isConnectedWeatherControl,
 } from '../public/settings/pages/modules-dashboard.js';
@@ -84,6 +84,7 @@ const sharedTranslationKeys = [
   'nav.sectionOverview',
   'nav.sectionPlan',
   'nav.sectionHome',
+  'nav.sectionCustomModules',
   'shopping.manageCategories',
 ];
 const settingsTranslationKeys = [...new Set([...registryTranslationKeys, ...sharedTranslationKeys])];
@@ -93,7 +94,7 @@ function getTranslation(locale, key) {
 }
 
 test('settings leaves have unique IDs and paths', () => {
-  assert.equal(SETTINGS_LEAVES.length, 18);
+  assert.equal(SETTINGS_LEAVES.length, 21);
   assert.equal(new Set(SETTINGS_LEAVES.map((leaf) => leaf.id)).size, SETTINGS_LEAVES.length);
   assert.equal(new Set(SETTINGS_LEAVES.map((leaf) => leaf.path)).size, SETTINGS_LEAVES.length);
 });
@@ -110,6 +111,7 @@ test('personal settings leaf modules import without browser globals', async () =
     import('/settings/pages/personal-account.js'),
     import('/settings/pages/personal-appearance.js'),
     import('/settings/pages/personal-device.js'),
+    import('/settings/pages/personal-weather.js'),
   ]);
 
   for (const module of modules) {
@@ -359,6 +361,22 @@ test('the Settings controller delegates to the shell instead of rendering tab pa
   assert.doesNotMatch(source, /settings-nav\.js/);
 });
 
+test('the Settings controller forces a full shell render when the locale changes', async () => {
+  const source = await readFile(
+    new URL('../public/pages/settings.js', import.meta.url),
+    'utf8',
+  );
+  // Locale muss aus i18n importiert und beim Mount sowie im Soft-Update verglichen
+  // werden, damit ein Sprachwechsel die Sidebar/den Seitenkopf nicht stale lässt.
+  assert.match(source, /import\s*\{\s*getLocale\s*\}\s*from\s*'\/i18n\.js'/);
+  assert.match(source, /renderedLocale\s*=\s*getLocale\(\)/);
+  assert.match(source, /const\s+localeChanged\s*=\s*renderedLocale\s*!==\s*currentLocale/);
+  // Beide Soft-Update-Pfade dürfen bei Sprachwechsel nicht inkrementell rendern.
+  assert.doesNotMatch(source, /incremental:\s*true/);
+  const incrementalFlags = source.match(/incremental:\s*!localeChanged/g) ?? [];
+  assert.equal(incrementalFlags.length, 2);
+});
+
 test('Kitchen child IDs use the canonical order', () => {
   assert.deepEqual(KITCHEN_CHILD_IDS, ['meals', 'recipes', 'shopping']);
   assert.equal(Object.isFrozen(KITCHEN_CHILD_IDS), true);
@@ -465,7 +483,7 @@ test('navigation sections match the grouped desktop information architecture', (
   assert.equal(moduleSection('notes'), NAV_SECTION.plan);
   assert.equal(moduleSection('kitchen'), NAV_SECTION.home);
   assert.equal(moduleSection('contacts'), NAV_SECTION.home);
-  assert.equal(moduleSection('third-party-weather-station'), NAV_SECTION.home);
+  assert.equal(moduleSection('third-party-weather-station'), NAV_SECTION.customModules);
   assert.equal(moduleSection('settings'), NAV_SECTION.home);
 });
 
@@ -477,6 +495,7 @@ test('desktop navigation order is applied only inside each section', () => {
     { module: 'budget' },
     { module: 'notes' },
     { module: 'tasks' },
+    { module: 'third-party-weather-station' },
     { module: 'settings' },
   ];
 
@@ -489,6 +508,7 @@ test('desktop navigation order is applied only inside each section', () => {
       { module: 'notes' },
       { module: 'budget' },
       { module: 'contacts' },
+      { module: 'third-party-weather-station' },
       { module: 'settings' },
     ],
   );

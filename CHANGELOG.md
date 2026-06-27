@@ -7,6 +7,181 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.77.6] - 2026-06-26
+
+### Fixed
+- **Dashboard birthday widget:** the overview now shows upcoming birthdays from all household users instead of only birthdays created by the currently signed-in user. (Fixes #406)
+
+## [0.77.5] - 2026-06-25
+
+### Fixed
+- **Weather widget: personal locations now show on the dashboard without a household weather provider:** a per-user Open-Meteo location now activates the weather proxy even when no admin household location is configured, so enabling the weather widget in the overview can render the user's own weather data.
+- **Translations: removed German placeholders from the personal weather and assignment UI:** all supported locales now translate the personal weather settings labels and the shared user multi-select "No one" copy instead of showing German fallback text.
+- **Dark mode: date-navigation arrows in Meals and Calendar are now visible on desktop:** the previous/next chevrons now use the app accent color instead of inheriting a dark/default icon color.
+
+## [0.77.4] - 2026-06-25
+
+### Added
+- **Hungarian locale**: full Hungarian (`hu`) translation added, covering all UI strings across all modules (tasks, calendar, shopping, meals, budget, notes, contacts, birthdays, recipes, documents, housekeeping, settings, and more). Hungarian is now selectable in Settings → Language. The web installer wizard and CLI installer are localized as well.
+
+## [0.77.3] - 2026-06-24
+
+### Fixed
+- **Split expenses: adding a family member as a group guest restricted their navigation to the Split page only:** when an existing user was added to an expense group with the `guest` role via the members endpoint, they were incorrectly written into the `split_expense_guest_users` table. This caused `access_scope` to be resolved as `split_guest` on their next login, hiding all navigation items except Budget/Split. The `split_expense_guest_users` table is now exclusively populated by the dedicated guest-account creation flow. A database migration removes existing incorrect entries for users who have no `guest_created` activity record. (Fixes #400)
+
+## [0.77.2] - 2026-06-23
+
+### Fixed
+- **Shopping lists: can't check/uncheck items after switching lists:** switching to another list (or renaming one) re-bound the click handler on the persistent list container without removing the previous one, so each tap on an item's checkbox fired the toggle twice and cancelled itself out — only adding items still worked. The click delegation is now bound once per container. (Fixes #398)
+
+## [0.77.1] - 2026-06-23
+
+### Fixed
+- **Missing `reminders.pushed_at` column after database rebuild:** migration 57 rebuilt the `reminders` table without carrying over the `pushed_at` column added in migration 54, causing `PushScheduler` to fail with `no such column: r.pushed_at` on every fresh install or update. A new migration restores the column. (Fixes #393)
+- **Schema-test export out of sync:** the node:sqlite-synchronized schema export used by tests had stopped at migration 61, so schema tests applying the exported migrations never picked up the restored `reminders.pushed_at` column.
+
+## [0.77.0] - 2026-06-23
+
+### Fixed
+- **Calendar export feed: events with an explicit UTC offset:** events synced from sources that store an explicit timezone offset (e.g. Google Calendar, like `+02:00`) were exported with an invalid timestamp (`...+02:00Z`), producing `NaN` date/time values in the ICS feed instead of being converted to UTC. The export now correctly distinguishes offset-qualified timestamps from naive local ones.
+
+## [0.76.0] - 2026-06-22
+
+### Added
+- **Read-only calendar export feed:** Settings → Calendar now lets any user expose their visible calendar events (own events, assigned events, and shared/own ICS subscriptions) as a `webcal://`/`https://` ICS feed for subscribing in Apple Calendar, Google Calendar, Thunderbird, and similar apps. Enabling the feed generates a secret token; "Regenerate link" rotates it (invalidating the old URL) and "Disable feed" clears it. The feed is served by a public, token-authenticated `GET /feed/calendar/:token.ics` route, rate-limited to 30 requests/minute per IP. (Discussion #387)
+
+## [0.75.2] - 2026-06-20
+
+### Changed
+- **Settings overview polish:** the desktop Settings root now shows a descriptive overview instead of duplicating the local navigation, while status summaries, breadcrumbs, and mobile module rows use calmer system-aligned states and spacing.
+
+## [0.75.1] - 2026-06-20
+
+### Added
+- **Gotify and ntfy notification channels:** admins can add household notification channels for self-hosted Gotify or ntfy servers alongside existing per-device Web Push. Reminder delivery now tracks each channel independently to avoid duplicate sends and preserve retry state.
+
+## [0.75.0] - 2026-06-19
+
+### Added
+- **Per-user weather location:** any user — not just the admin — can now set their own weather location, units, and automatic-location-updates toggle under Settings → Personal → My Weather, overriding the household default just for their own dashboard widget. A status indicator shows whether a personal location or the household default is active, and a "Use household default" action clears the override. The dashboard's automatic location updates (introduced in v0.74.7) now write to this per-user override for every user instead of being admin-only.
+
+## [0.74.8] - 2026-06-19
+
+### Fixed
+- **Missing translations for admin password reset:** the "New password" label, placeholder, and hint added to the "Edit member" dialog in v0.74.6 were only present in the German locale file, so every other language fell back to German text. All 18 non-German locales now have proper translations. (Fixes #372)
+
+## [0.74.7] - 2026-06-19
+
+### Added
+- **Automatic weather location updates:** an opt-in "Standort automatisch alle 30 Minuten aktualisieren" checkbox in Settings → Modules → Dashboard re-requests the browser's geolocation every 30 minutes while the dashboard is open, silently updating the saved coordinates (admin-only). Enabling it immediately triggers the existing one-time location request. A stale city label is cleared on each automatic update so the widget falls back to showing coordinates instead of an outdated city name after the location changes.
+
+## [0.74.6] - 2026-06-19
+
+### Added
+- **Admin password reset for family members:** the "Edit member" dialog now has an optional "Reset password" field (min. 8 characters, leave blank to keep the current password), so an admin can set a new password for a family member who forgot theirs — no SMTP/`BASE_URL` setup required, unlike the self-service "Forgot password" flow. Changing a member's password invalidates their other active sessions. (Fixes #372)
+
+## [0.74.5] - 2026-06-19
+
+### Added
+- **Calendar click-to-create time pre-fill:** clicking an empty slot in the day or week view now pre-fills the new event's start time from the clicked position (rounded to the nearest 30 minutes), with the end time set to start + 1 hour. Previously the start time was always hardcoded to 09:00.
+
+## [0.74.4] - 2026-06-18
+
+### Fixed
+- **Weather widget inset:** restored the card padding around current conditions and the forecast row, which was lost when the widget's wrapper was introduced in v0.74.3 and left its content flush against the card edges in contexts without the dashboard-specific override.
+
+## [0.74.3] - 2026-06-18
+
+### Added
+- **Brazilian public holidays:** a local fallback (9 national holidays plus computed Good Friday) now populates the calendar when OpenHolidays returns no rows for `BR`, using Portuguese labels.
+- **Custom modules navigation group:** enabled third-party modules now get their own localized "Custom modules" sidebar section instead of being grouped under Home.
+
+### Changed
+- **Weather widget sizing:** the dashboard weather widget now uses container queries instead of viewport media queries, so its layout density actually reflects its configured grid size instead of always forcing full width on larger screens.
+
+### Fixed
+- **Help label fallback:** the navigation and help-page "Help" label no longer falls back to the German string "Hilfe" in non-German locales; all locales now show the correctly translated label.
+
+## [0.74.2] - 2026-06-18
+
+### Fixed
+- **Calendar floating action button:** the keyboard focus ring now matches the active module accent color instead of always showing the global violet, and the button gets the documented top/bottom specular highlight for visual depth.
+
+## [0.74.1] - 2026-06-18
+
+### Security
+- **Closed a DNS-rebinding gap in subscription logo discovery:** the validated public address is now pinned for the actual HTTPS connection instead of letting a second, independent DNS lookup decide where the request goes.
+- **Updated nodemailer** to fix several SMTP command-injection and CRLF-injection vulnerabilities (GHSA-c7w3-x93f-qmm8, GHSA-vvjj-xcjg-gr5g, GHSA-268h-hp4c-crq3, GHSA-wqvq-jvpq-h66f, GHSA-r7g4-qg5f-qqm2).
+
+### Fixed
+- **Subscription logo HTML parsing** no longer double-unescapes encoded entities (e.g. `&amp;lt;` no longer collapses to `<`).
+
+## [0.74.0] - 2026-06-18
+
+### Changed
+- **Calmer create/edit modals across the app:** form dialogs now keep their module visible as a soft, tinted blur behind the panel instead of a full-screen takeover, and on mobile they open as a bottom sheet anchored to the lower edge.
+- **Progressive disclosure in heavy forms:** the most-used fields stay visible while secondary options collapse under a "More settings" section that auto-expands when editing an entry that already uses them. Applied to calendar events, tasks, budget entries, subscriptions, contacts, birthdays, meals, recipes, notes, and documents.
+
+## [0.73.0] - 2026-06-18
+
+### Added
+- **Subscriptions tracker under Budget:** a new tab between Budget and Loans tracks daily, weekly, monthly, and yearly services with renewal dates, pause/disable state, custom categories and payment methods, search/filter/sort controls, uploaded or securely discovered logos, brand colors, and responsive mobile cards.
+- **Subscription budgeting and analytics:** configurable monthly budget, remaining/over-budget status, yearly projection, category and payment-method breakdowns, native-currency amounts, and optional Fixer-backed conversion into a household base currency with a 12-hour server cache.
+- **Subscription reminders:** per-subscription reminder timing feeds the existing in-app reminder center.
+- **Budget-linked subscription expenses:** every active subscription maintains its next payment as a Budget expense under a localized `Subscription` category. Subscription categories are mirrored as Budget subcategories, disabling removes the pending expense, and renewal preserves the paid entry while creating the next one.
+- **Redesigned subscription editor:** grouped identity, billing, renewal, organization, and service sections replace the flat form. The logo sits beside the name, currency/category/payment method use searchable in-modal lists, and logo discovery shows an immediate preview.
+- **Compact subscription dashboard:** the Subscriptions tab now uses the Budget accent tab color, Split-style page gradient, denser subscription rows, compact summary cards, a renewal forecast area chart, category pie chart, and payment-method breakdown.
+- **Selectable subscription logo search:** logo discovery now opens a picker with site-owned candidates (declared icons, favicon, Open Graph image) so users can choose the exact logo before saving.
+
+### Security
+- **Protected external subscription integrations:** all subscription APIs require the existing authenticated session and CSRF middleware; logo discovery validates every public HTTPS redirect, blocks private/link-local addresses, reads only bounded page/search metadata, and constrains remote image size/type.
+
+### Fixed
+- **Subscription settings and logo discovery:** the base currency now uses the searchable currency picker, an unset subscription budget is shown as unlimited instead of over budget, and logo search tries page icons plus the standard favicon without failing on large page bodies.
+- **Subscription service-name logo search:** plain service names now generate likely public domain candidates and inspect those sites directly under the existing SSRF protections, and logo search failures surface in the UI while detailed diagnostics are written to server logs.
+- **Subscription modal polish:** the next payment field now uses the native date picker, the billing cycle control no longer relies on the unstable native select in the modal, and newer subscription labels are localized across all supported languages.
+
+## [0.72.0] - 2026-06-17
+
+### Added
+- **Budget category management (#357):** a "Manage categories" button in the Budget tab header opens a modal to rename, reorder, and delete budget categories and their subcategories, built on a reusable `oikos-category-manager` web component. Deletion is blocked while a category or subcategory is still referenced by entries, or when it is the last category of its type / last subcategory of its category.
+
+## [0.71.51] - 2026-06-17
+
+### Added
+- **SMTP email & self-service password reset**: administrators can configure an SMTP server under Settings → Administration → Email (or via the `EMAIL_SMTP_*` / `EMAIL_FROM_*` environment variables), with a "Test connection" button to validate the setup. Once email is configured, the login page offers a "Forgot password?" link — users request a reset by username or email and receive a time-limited (1 hour) reset link. The absolute origin for reset links is taken from the new `BASE_URL` setting.
+
+### Security
+- Password-reset links are built only from the configured `BASE_URL` and never from the request Host header (host-header / reset-poisoning protection). The forgot-password endpoint always returns a generic response to prevent account enumeration, reset endpoints are rate-limited, and tokens are single-use, hashed at rest, and expire after one hour. The configured SMTP password is never returned by the API.
+
+## [0.71.50] - 2026-06-16
+
+### Added
+- **Web Push notifications for reminders**: opt-in push notifications (Settings → Personal → Notifications) deliver due reminders as system notifications even when the app is closed. A background scheduler sends due task, event and birthday reminders via the Web Push standard (VAPID / RFC 8291); VAPID keys are generated automatically on first use, or can be pinned across redeployments via `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT`. Requires HTTPS. On devices where push is enabled, the in-app reminder toast still appears while the duplicate in-page browser notification is suppressed.
+
+## [0.71.49] - 2026-06-16
+
+### Added
+- **Unified Region / Format setting**: a single Region dropdown in Appearance settings presets currency, date format and time format together for 24 supported locales (e.g. de-DE, en-US, pt-BR). Selecting "Custom" reveals the individual currency, date and time controls. The Region control is admin-only, matching the previous currency permission.
+
+### Changed
+- **Currency moved out of Budget settings**: the currency selector now lives in the unified Region / Format control in Appearance settings; the Budget settings page links there instead.
+
+## [0.71.47] - 2026-06-15
+
+### Changed
+- **Weather widget appears first on the dashboard**: the default dashboard layout now places the weather card above the tasks and calendar widgets, so it is visible at the top without scrolling. This applies to new installs and anyone who has not customised their widget order; existing custom layouts are preserved.
+
+## [0.71.46] - 2026-06-15
+
+### Fixed
+- **Editing an hourly housekeeping visit no longer fails with "daily_rate is required"**: saving changes to a visit billed by the hour (e.g. adjusting the hours worked) returned a 400 error because the update endpoint always demanded a daily rate, even though hourly visits submit minutes worked instead. The daily rate is now only required for daily-rate visits; hourly visits recompute the amount from the minutes worked.
+
+## [0.71.45] - 2026-06-15
+
+### Fixed
+- **Settings side navigation updates its language on locale switch**: changing the application language while on a Settings page left the side navigation menu and the page header in the previous language until a hard reload. The Settings shell now tracks the locale it last rendered with and performs a full re-render when it changes, so the labels update immediately like the rest of the app.
+
 ## [0.71.44] - 2026-06-14
 
 ### Changed

@@ -18,10 +18,12 @@ import { buildOpenApiSpec } from './openapi.js';
 import * as googleCalendar from './services/google-calendar.js';
 import * as appleCalendar from './services/apple-calendar.js';
 import * as icsSubscription from './services/ics-subscription.js';
+import * as icsExport from './services/ics-export.js';
 import * as caldavReminders from './services/caldav-reminders-sync.js';
 import * as holidays from './services/holidays.js';
 import { startScheduler as startBackupScheduler } from './services/backup-scheduler.js';
 import { startScheduler as startSplitExpenseScheduler } from './services/split-expenses-scheduler.js';
+import { startScheduler as startPushScheduler } from './services/push-scheduler.js';
 import dashboardRouter from './routes/dashboard.js';
 import tasksRouter from './routes/tasks.js';
 import shoppingRouter from './routes/shopping.js';
@@ -33,6 +35,7 @@ import contactsRouter from './routes/contacts.js';
 import cardavRouter from './routes/cardav.js';
 import birthdaysRouter from './routes/birthdays.js';
 import budgetRouter from './routes/budget.js';
+import subscriptionsRouter from './routes/subscriptions.js';
 import documentsRouter from './routes/documents.js';
 import dmsRouter from './routes/dms.js';
 import splitExpensesRouter from './routes/split-expenses.js';
@@ -44,6 +47,9 @@ import familyRouter from './routes/family.js';
 import backupRouter from './routes/backup.js';
 import housekeepingRouter from './routes/housekeeping.js';
 import modulesRouter from './routes/modules.js';
+import pushRouter from './routes/push.js';
+import emailRouter from './routes/email.js';
+import notificationsRouter from './routes/notifications.js';
 
 const log     = createLogger('Server');
 const logSync = createLogger('Sync');
@@ -282,6 +288,31 @@ app.get('/api/v1/openapi.json', requireAuth, requireAdmin, sendOpenApi);
 // /openapi.json liegt außerhalb von /api/, daher Rate-Limiter explizit als Route-Middleware.
 app.get('/openapi.json', apiLimiter, requireAuth, requireAdmin, sendOpenApi);
 
+// --------------------------------------------------------
+// Öffentlicher read-only ICS-Feed (Discussion #387)
+// Außerhalb /api/v1: keine Session/CSRF — Token in URL ist das Geheimnis.
+// --------------------------------------------------------
+const feedLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.get('/feed/calendar/:token.ics', feedLimiter, (req, res) => {
+  try {
+    const userId = icsExport.findUserIdByFeedToken(db.get(), req.params.token);
+    if (!userId) return res.status(404).type('text/plain').send('Not found');
+    const ics = icsExport.buildFeed(db.get(), userId);
+    res.set('Cache-Control', 'private, no-store');
+    res.set('Content-Disposition', 'inline; filename="yuvomi.ics"');
+    res.type('text/calendar; charset=utf-8').send(ics);
+  } catch (err) {
+    log.error('', err);
+    res.status(500).type('text/plain').send('Internal error');
+  }
+});
+
 // Alle weiteren API-Routen erfordern Authentifizierung + CSRF-Schutz
 app.use('/api/v1', requireAuth);
 app.use('/api/v1', (req, res, next) => {
@@ -309,6 +340,7 @@ app.use('/api/v1/notes', notesRouter);
 app.use('/api/v1/contacts/cardav', cardavRouter);
 app.use('/api/v1/contacts', contactsRouter);
 app.use('/api/v1/birthdays', birthdaysRouter);
+app.use('/api/v1/budget/subscriptions', subscriptionsRouter);
 app.use('/api/v1/budget', budgetRouter);
 app.use('/api/v1/documents/dms', dmsRouter);
 app.use('/api/v1/documents', documentsRouter);
@@ -321,6 +353,9 @@ app.use('/api/v1/family', familyRouter);
 app.use('/api/v1/backup', backupRouter);
 app.use('/api/v1/housekeeping', housekeepingRouter);
 app.use('/api/v1/modules', modulesRouter);
+app.use('/api/v1/push', pushRouter);
+app.use('/api/v1/email', emailRouter);
+app.use('/api/v1/notifications', notificationsRouter);
 
 // --------------------------------------------------------
 // Health-Check (für Docker)
@@ -403,6 +438,7 @@ app.listen(PORT, () => {
   // Backup-Scheduler starten
   startBackupScheduler();
   startSplitExpenseScheduler();
+  startPushScheduler();
 });
 
 export default app;

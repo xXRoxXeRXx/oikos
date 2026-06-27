@@ -1962,6 +1962,330 @@ const MIGRATIONS = [
       }
     },
   },
+  {
+    version: 54,
+    description: 'Web Push: push_subscriptions table + reminders.pushed_at column',
+    up(db) {
+      db.exec(`
+        CREATE TABLE push_subscriptions (
+          id           INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          endpoint     TEXT    NOT NULL UNIQUE,
+          p256dh       TEXT    NOT NULL,
+          auth         TEXT    NOT NULL,
+          user_agent   TEXT,
+          created_at   TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+          last_used_at TEXT
+        );
+        CREATE INDEX idx_push_subs_user ON push_subscriptions(user_id);
+        ALTER TABLE reminders ADD COLUMN pushed_at TEXT;
+      `);
+    },
+  },
+  {
+    version: 55,
+    description: 'Password reset tokens table',
+    up: `
+      CREATE TABLE password_resets (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token_hash TEXT    NOT NULL,
+        expires_at INTEGER NOT NULL,
+        created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+      );
+      CREATE UNIQUE INDEX idx_password_resets_hash ON password_resets(token_hash);
+      CREATE INDEX idx_password_resets_user ON password_resets(user_id);
+    `,
+  },
+  {
+    version: 56,
+    description: 'Budget subscription tracker with categories, payment methods, settings, and exchange-rate cache',
+    up: `
+      CREATE TABLE IF NOT EXISTS subscription_categories (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT    NOT NULL COLLATE NOCASE UNIQUE,
+        color      TEXT    NOT NULL DEFAULT '#0F766E',
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      );
+
+      INSERT OR IGNORE INTO subscription_categories (name, color, sort_order) VALUES
+        ('Entertainment', '#7C3AED', 0),
+        ('Productivity',  '#2563EB', 1),
+        ('Utilities',     '#0F766E', 2),
+        ('Health',        '#DC2626', 3),
+        ('Education',     '#D97706', 4),
+        ('Other',         '#64748B', 5);
+
+      CREATE TABLE IF NOT EXISTS subscription_payment_methods (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT    NOT NULL COLLATE NOCASE UNIQUE,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      );
+
+      INSERT OR IGNORE INTO subscription_payment_methods (name, sort_order) VALUES
+        ('Credit Card', 0),
+        ('Debit Card',  1),
+        ('PayPal',      2),
+        ('Apple Pay',   3),
+        ('Google Pay',  4),
+        ('Bank Transfer', 5),
+        ('Other',       6);
+
+      CREATE TABLE IF NOT EXISTS budget_subscriptions (
+        id                INTEGER PRIMARY KEY AUTOINCREMENT,
+        name              TEXT    NOT NULL,
+        description       TEXT,
+        amount            REAL    NOT NULL CHECK(amount >= 0),
+        currency          TEXT    NOT NULL,
+        billing_cycle     TEXT    NOT NULL CHECK(billing_cycle IN ('daily', 'weekly', 'monthly', 'yearly')),
+        cycle_interval    INTEGER NOT NULL DEFAULT 1 CHECK(cycle_interval BETWEEN 1 AND 365),
+        next_payment_date TEXT    NOT NULL,
+        category_id       INTEGER REFERENCES subscription_categories(id) ON DELETE SET NULL,
+        payment_method_id INTEGER REFERENCES subscription_payment_methods(id) ON DELETE SET NULL,
+        reminder_days     INTEGER NOT NULL DEFAULT 3 CHECK(reminder_days BETWEEN 0 AND 365),
+        enabled           INTEGER NOT NULL DEFAULT 1 CHECK(enabled IN (0, 1)),
+        website_url       TEXT,
+        logo_data         TEXT,
+        brand_color       TEXT,
+        notes             TEXT,
+        created_by        INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at        TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        updated_at        TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS subscription_settings (
+        id             INTEGER PRIMARY KEY CHECK(id = 1),
+        monthly_budget REAL    NOT NULL DEFAULT 0 CHECK(monthly_budget >= 0),
+        base_currency  TEXT    NOT NULL DEFAULT 'EUR',
+        updated_at     TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      );
+      INSERT OR IGNORE INTO subscription_settings (id) VALUES (1);
+
+      CREATE TABLE IF NOT EXISTS subscription_exchange_rates (
+        base_currency TEXT NOT NULL,
+        quote_currency TEXT NOT NULL,
+        rate          REAL NOT NULL CHECK(rate > 0),
+        fetched_at    TEXT NOT NULL,
+        PRIMARY KEY(base_currency, quote_currency)
+      );
+
+      CREATE TRIGGER IF NOT EXISTS trg_budget_subscriptions_updated_at
+        AFTER UPDATE ON budget_subscriptions FOR EACH ROW
+        BEGIN UPDATE budget_subscriptions SET updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = OLD.id; END;
+
+      CREATE TRIGGER IF NOT EXISTS trg_subscription_settings_updated_at
+        AFTER UPDATE ON subscription_settings FOR EACH ROW
+        BEGIN UPDATE subscription_settings SET updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = 1; END;
+
+      CREATE INDEX IF NOT EXISTS idx_budget_subscriptions_next_payment
+        ON budget_subscriptions(enabled, next_payment_date);
+      CREATE INDEX IF NOT EXISTS idx_budget_subscriptions_category
+        ON budget_subscriptions(category_id);
+      CREATE INDEX IF NOT EXISTS idx_budget_subscriptions_payment_method
+        ON budget_subscriptions(payment_method_id);
+    `,
+  },
+  {
+    version: 57,
+    description: 'Allow subscription entities in the existing reminder center',
+    up: `
+      CREATE TABLE reminders_new (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        entity_type TEXT    NOT NULL CHECK(entity_type IN ('task', 'event', 'subscription')),
+        entity_id   INTEGER NOT NULL,
+        remind_at   TEXT    NOT NULL,
+        dismissed   INTEGER NOT NULL DEFAULT 0,
+        created_by  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      );
+      INSERT INTO reminders_new (id, entity_type, entity_id, remind_at, dismissed, created_by, created_at)
+        SELECT id, entity_type, entity_id, remind_at, dismissed, created_by, created_at FROM reminders;
+      DROP TABLE reminders;
+      ALTER TABLE reminders_new RENAME TO reminders;
+      CREATE INDEX idx_reminders_entity ON reminders(entity_type, entity_id);
+      CREATE INDEX idx_reminders_remind ON reminders(remind_at);
+      CREATE INDEX idx_reminders_user ON reminders(created_by);
+    `,
+  },
+  {
+    version: 58,
+    description: 'Link each active subscription renewal to its pending Budget expense',
+    up: `
+      ALTER TABLE budget_subscriptions ADD COLUMN budget_entry_id INTEGER
+        REFERENCES budget_entries(id) ON DELETE SET NULL;
+      CREATE INDEX IF NOT EXISTS idx_budget_subscriptions_budget_entry
+        ON budget_subscriptions(budget_entry_id);
+    `,
+    afterUp: (database) => {
+      const subscriptions = database.prepare(`
+        SELECT * FROM budget_subscriptions
+        WHERE enabled = 1 AND budget_entry_id IS NULL
+      `).all();
+      const insert = database.prepare(`
+        INSERT INTO budget_entries
+          (title, amount, category, subcategory, date, is_recurring, created_by)
+        VALUES (?, ?, 'financial_other', 'bank_fees', ?, 0, ?)
+      `);
+      const link = database.prepare(`
+        UPDATE budget_subscriptions SET budget_entry_id = ? WHERE id = ?
+      `);
+      for (const subscription of subscriptions) {
+        const entry = insert.run(
+          subscription.name,
+          -Math.abs(subscription.amount),
+          subscription.next_payment_date,
+          subscription.created_by,
+        );
+        link.run(entry.lastInsertRowid, subscription.id);
+      }
+    },
+  },
+  {
+    version: 59,
+    description: 'Mirror subscription categories into Budget and recategorize linked expenses',
+    up: `
+      ALTER TABLE subscription_categories ADD COLUMN budget_subcategory_key TEXT;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_subscription_categories_budget_subcategory
+        ON subscription_categories(budget_subcategory_key)
+        WHERE budget_subcategory_key IS NOT NULL;
+    `,
+    afterUp: (database) => {
+      const nextOrder = database.prepare(`
+        SELECT COALESCE(MAX(sort_order), -1) + 1 AS n FROM budget_categories WHERE type = 'expense'
+      `).get().n;
+      database.prepare(`
+        INSERT OR IGNORE INTO budget_categories (key, name, type, sort_order)
+        VALUES ('subscriptions', 'Subscription', 'expense', ?)
+      `).run(nextOrder);
+
+      const defaultKeys = new Map([
+        ['entertainment', 'subscription_entertainment'],
+        ['productivity', 'subscription_productivity'],
+        ['utilities', 'subscription_utilities'],
+        ['health', 'subscription_health'],
+        ['education', 'subscription_education'],
+        ['other', 'subscription_other'],
+      ]);
+      const categories = database.prepare(`
+        SELECT id, name, sort_order FROM subscription_categories ORDER BY sort_order, id
+      `).all();
+      const updateCategory = database.prepare(`
+        UPDATE subscription_categories SET budget_subcategory_key = ? WHERE id = ?
+      `);
+      const upsertSubcategory = database.prepare(`
+        INSERT INTO budget_subcategories (key, category_key, name, sort_order)
+        VALUES (?, 'subscriptions', ?, ?)
+        ON CONFLICT(key) DO UPDATE SET
+          category_key = excluded.category_key,
+          name = excluded.name,
+          sort_order = excluded.sort_order
+      `);
+      for (const category of categories) {
+        const key = defaultKeys.get(category.name.toLowerCase()) || `subscription_category_${category.id}`;
+        updateCategory.run(key, category.id);
+        upsertSubcategory.run(key, category.name, category.sort_order);
+      }
+
+      database.prepare(`
+        UPDATE budget_entries
+        SET category = 'subscriptions',
+            subcategory = COALESCE((
+              SELECT c.budget_subcategory_key
+              FROM budget_subscriptions s
+              LEFT JOIN subscription_categories c ON c.id = s.category_id
+              WHERE s.budget_entry_id = budget_entries.id
+            ), '')
+        WHERE id IN (
+          SELECT budget_entry_id FROM budget_subscriptions WHERE budget_entry_id IS NOT NULL
+        )
+      `).run();
+    },
+  },
+  {
+    version: 60,
+    description: 'add notification channel delivery tracking',
+    up: `
+      CREATE TABLE IF NOT EXISTS notification_channels (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        provider        TEXT    NOT NULL,
+        name            TEXT    NOT NULL,
+        enabled         INTEGER NOT NULL DEFAULT 0,
+        scope           TEXT    NOT NULL DEFAULT 'household',
+        user_id         INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        config_json     TEXT    NOT NULL DEFAULT '{}',
+        secret_json     TEXT    NOT NULL DEFAULT '{}',
+        last_test_at    TEXT,
+        last_success_at TEXT,
+        last_error      TEXT,
+        created_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        updated_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_notification_channels_provider
+        ON notification_channels(provider);
+
+      CREATE INDEX IF NOT EXISTS idx_notification_channels_enabled
+        ON notification_channels(enabled);
+
+      CREATE INDEX IF NOT EXISTS idx_notification_channels_user
+        ON notification_channels(user_id);
+
+      CREATE TABLE IF NOT EXISTS notification_deliveries (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        reminder_id     INTEGER NOT NULL REFERENCES reminders(id) ON DELETE CASCADE,
+        provider        TEXT    NOT NULL,
+        channel_id      INTEGER REFERENCES notification_channels(id) ON DELETE SET NULL,
+        target_key      TEXT    NOT NULL,
+        status          TEXT    NOT NULL DEFAULT 'pending'
+                                  CHECK(status IN ('pending', 'sent', 'failed', 'skipped')),
+        attempt_count   INTEGER NOT NULL DEFAULT 0,
+        next_attempt_at TEXT,
+        last_attempt_at TEXT,
+        sent_at         TEXT,
+        error           TEXT,
+        created_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        updated_at      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        UNIQUE(reminder_id, provider, target_key)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_notification_deliveries_reminder
+        ON notification_deliveries(reminder_id);
+
+      CREATE INDEX IF NOT EXISTS idx_notification_deliveries_retry
+        ON notification_deliveries(status, next_attempt_at);
+    `,
+  },
+  {
+    version: 61,
+    description: 'add per-user read-only calendar feed token',
+    up: `
+      ALTER TABLE users ADD COLUMN calendar_feed_token TEXT;
+
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_users_calendar_feed_token
+        ON users(calendar_feed_token)
+        WHERE calendar_feed_token IS NOT NULL;
+    `,
+  },
+  {
+    version: 62,
+    description: 'restore reminders.pushed_at dropped by the migration 57 table rebuild',
+    up: `
+      ALTER TABLE reminders ADD COLUMN pushed_at TEXT;
+    `,
+  },
+  {
+    version: 63,
+    description: 'Remove existing family members incorrectly added to split_expense_guest_users',
+    up: `
+      DELETE FROM split_expense_guest_users
+      WHERE user_id NOT IN (
+        SELECT DISTINCT entity_id FROM expense_activity
+        WHERE type = 'guest_created' AND entity_type = 'member' AND entity_id IS NOT NULL
+      );
+    `,
+  },
 ];
 
 /**

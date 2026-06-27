@@ -6,7 +6,7 @@
 
 import { api } from '/api.js';
 import { renderRRuleFields, bindRRuleEvents, getRRuleValues } from '/rrule-ui.js';
-import { openModal as openSharedModal, closeModal } from '/components/modal.js';
+import { openModal as openSharedModal, closeModal, advancedSection } from '/components/modal.js';
 import { stagger } from '/utils/ux.js';
 import { t, formatDate as formatPreferredDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid, formatTimeInput, parseTimeInput, timeInputPlaceholder } from '/i18n.js';
 import { esc, fmtLocation } from '/utils/html.js';
@@ -1256,7 +1256,10 @@ function renderWeekView(container) {
       return;
     }
     const col = e.target.closest('[data-date]');
-    if (col) openEventModal({ mode: 'create', date: col.dataset.date });
+    if (col) {
+      const time = clickedTime(e, col);
+      openEventModal({ mode: 'create', date: col.dataset.date, time });
+    }
   });
 
   container.querySelector('.allday-row').addEventListener('click', (e) => {
@@ -1310,6 +1313,16 @@ function nowTop() {
   const now = new Date();
   const minutes = now.getHours() * 60 + now.getMinutes();
   return (minutes / 60) * HOUR_HEIGHT;
+}
+
+/** Berechnet die geklickte Uhrzeit (auf 30-Minuten gerundet) aus einem Click-Event
+ *  relativ zum übergebenen Spalten-Element. */
+function clickedTime(e, colEl) {
+  const rect = colEl.getBoundingClientRect();
+  const yOffset = Math.max(0, e.clientY - rect.top);
+  const totalMinutes = Math.round((yOffset / HOUR_HEIGHT) * 60 / 30) * 30;
+  const clamped = Math.min(Math.max(totalMinutes, 0), 23 * 60 + 30);
+  return `${pad(Math.floor(clamped / 60))}:${pad(clamped % 60)}`;
 }
 
 function timeRangeForEvent(ev) {
@@ -1450,7 +1463,8 @@ function renderDayView(container) {
       if (ev) showEventPopup(ev, evEl);
       return;
     }
-    openEventModal({ mode: 'create', date: state.cursor });
+    const time = clickedTime(e, e.currentTarget);
+    openEventModal({ mode: 'create', date: state.cursor, time });
   });
 
   const scroll = container.querySelector('#day-scroll');
@@ -1522,6 +1536,8 @@ export const __test = {
   agendaSegmentKind,
   hasAttachment,
   attachmentUrls,
+  clickedTime,
+  HOUR_HEIGHT,
 };
 
 function renderAgendaEvent(ev, dayStr) {
@@ -1860,13 +1876,13 @@ async function loadSyncTargets(selectElement, currentEvent = null) {
 // Event-Modal (Erstellen / Bearbeiten)
 // --------------------------------------------------------
 
-function openEventModal({ mode, event = null, date = null, reminder = null }) {
+function openEventModal({ mode, event = null, date = null, reminder = null, time = null }) {
   if (mode === 'edit' && event?.housekeeping_visit_id) {
     window.oikos.navigate(`/housekeeping?editVisit=${event.housekeeping_visit_id}`);
     return;
   }
   const isEdit = mode === 'edit';
-  const content = buildEventModalContent({ mode, event, date, reminder });
+  const content = buildEventModalContent({ mode, event, date, reminder, time });
 
   openSharedModal({
     title: isEdit ? t('calendar.editEvent') : t('calendar.newEvent'),
@@ -2098,21 +2114,96 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
   });
 }
 
-function buildEventModalContent({ mode, event, date, reminder = null }) {
+function buildEventModalContent({ mode, event, date, reminder = null, time = null }) {
   const isEdit = mode === 'edit';
   const today  = date || state.today;
 
   const startDate = isEdit ? localDate(event.start_datetime) : today;
   const startTime = isEdit && event.start_datetime.length > 10
-    ? localTime(event.start_datetime) : '09:00';
+    ? localTime(event.start_datetime) : (time ?? '09:00');
   const endDate   = isEdit && event.end_datetime ? localDate(event.end_datetime) : startDate;
   const endTime   = isEdit && event.end_datetime && event.end_datetime.length > 10
-    ? localTime(event.end_datetime) : '10:00';
+    ? localTime(event.end_datetime)
+    : (() => {
+        if (!time) return '10:00';
+        const totalMins = timeToMinutes(time) + 60;
+        const clamped   = Math.min(totalMins, 24 * 60 - 1);
+        return `${pad(Math.floor(clamped / 60))}:${pad(clamped % 60)}`;
+      })();
   const selectedIcon = eventIconName(isEdit ? event.icon : 'calendar');
 
   const selectedUserIds = isEdit
     ? (event.assigned_users?.map((u) => u.id) ?? (event.assigned_to ? [event.assigned_to] : []))
     : [];
+
+  // Sekundärfelder: wandern hinter „Weitere Einstellungen". Beim Bearbeiten
+  // automatisch geöffnet, falls bereits Werte gesetzt sind.
+  const advancedFieldsOpen = isEdit
+    && (!!event.location || !!event.description || hasAttachment(event));
+
+  const advancedFieldsHtml = `
+    <div class="form-group">
+      <label class="form-label" for="modal-location">${t('calendar.locationLabel')}</label>
+      <input type="text" class="form-input" id="modal-location"
+             placeholder="${t('calendar.locationPlaceholder')}" value="${esc(isEdit && event.location ? event.location : '')}">
+    </div>
+
+    <div class="form-group js-color-picker-group">
+      <label class="form-label" id="event-color-label">${t('calendar.colorLabel')}</label>
+      <div class="color-picker" id="event-color-picker" role="radiogroup" aria-labelledby="event-color-label">
+        ${EVENT_COLORS.map((c, i) => `
+          <div class="color-swatch" data-color="${c}" style="background-color:${c};"
+               role="radio"
+               tabindex="${i === 0 ? '0' : '-1'}"
+               aria-checked="false"
+               aria-label="${EVENT_COLOR_NAMES()[c] ?? c}"></div>
+        `).join('')}
+      </div>
+      <p class="form-hint color-picker__assignee-hint" id="color-picker-assignee-hint" hidden>${t('calendar.colorOverriddenByAssignee')}</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="event-sync-target">${t('calendar.syncTargetLabel')}</label>
+      <select class="form-input" id="event-sync-target">
+        <option value="">${t('calendar.syncTargetLocal')}</option>
+      </select>
+      <small class="form-hint">${t('calendar.syncTargetHint')}</small>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="modal-description">${t('calendar.descriptionLabel')}</label>
+      <textarea class="form-input" id="modal-description" rows="2"
+                placeholder="${t('calendar.descriptionPlaceholder')}">${esc(isEdit && event.description ? event.description : '')}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="modal-attachment">${t('calendar.attachmentLabel')}</label>
+      <p class="document-storage-target">
+        <i data-lucide="${state.documentUploadBackend === 'webdav' ? 'cloud' : 'database'}" aria-hidden="true"></i>
+        <span>${t('documents.activeUploadTarget', {
+          target: state.documentUploadBackend === 'webdav'
+            ? t('documents.storageWebdav')
+            : t('documents.storageLocal'),
+        })}</span>
+      </p>
+      <label class="document-dropzone" id="modal-attachment-dropzone" for="modal-attachment">
+        <input class="sr-only" id="modal-attachment" type="file" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+        <span class="document-dropzone__icon">
+          <i data-lucide="file-up" aria-hidden="true"></i>
+        </span>
+        <span class="document-dropzone__title">${t('documents.dropzoneTitle')}</span>
+        <span class="document-dropzone__hint">${t('documents.dropzoneHint')}</span>
+        <span class="document-dropzone__file" id="modal-selected-attachment" ${isEdit && event.attachment_name ? '' : 'hidden'}>
+          ${isEdit && event.attachment_name ? esc(selectedAttachmentLabel(event.attachment_name)) : ''}
+        </span>
+      </label>
+      <div class="form-help">${t('calendar.attachmentHint')}</div>
+      <div class="event-attachment-preview" id="modal-attachment-preview" ${isEdit && hasAttachment(event) ? '' : 'hidden'}>
+        ${isEdit && hasAttachment(event) ? attachmentPreviewHtml(event) : ''}
+      </div>
+      <button class="btn btn--secondary" id="modal-remove-attachment" type="button"
+              ${isEdit && hasAttachment(event) ? '' : 'hidden'}>${t('calendar.attachmentRemove')}</button>
+    </div>`;
 
   return `
     <div class="event-title-picker">
@@ -2180,71 +2271,10 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
     </div>
 
     <div class="form-group">
-      <label class="form-label" for="modal-location">${t('calendar.locationLabel')}</label>
-      <input type="text" class="form-input" id="modal-location"
-             placeholder="${t('calendar.locationPlaceholder')}" value="${esc(isEdit && event.location ? event.location : '')}">
-    </div>
-
-    <div class="form-group">
       ${renderUserMultiSelect(state.users, selectedUserIds, 'cal_assigned', 'calendar.assignedLabel')}
     </div>
 
-    <div class="form-group js-color-picker-group">
-      <label class="form-label" id="event-color-label">${t('calendar.colorLabel')}</label>
-      <div class="color-picker" id="event-color-picker" role="radiogroup" aria-labelledby="event-color-label">
-        ${EVENT_COLORS.map((c, i) => `
-          <div class="color-swatch" data-color="${c}" style="background-color:${c};"
-               role="radio"
-               tabindex="${i === 0 ? '0' : '-1'}"
-               aria-checked="false"
-               aria-label="${EVENT_COLOR_NAMES()[c] ?? c}"></div>
-        `).join('')}
-      </div>
-      <p class="form-hint color-picker__assignee-hint" id="color-picker-assignee-hint" hidden>${t('calendar.colorOverriddenByAssignee')}</p>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="event-sync-target">${t('calendar.syncTargetLabel')}</label>
-      <select class="form-input" id="event-sync-target">
-        <option value="">${t('calendar.syncTargetLocal')}</option>
-      </select>
-      <small class="form-hint">${t('calendar.syncTargetHint')}</small>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="modal-description">${t('calendar.descriptionLabel')}</label>
-      <textarea class="form-input" id="modal-description" rows="2"
-                placeholder="${t('calendar.descriptionPlaceholder')}">${esc(isEdit && event.description ? event.description : '')}</textarea>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="modal-attachment">${t('calendar.attachmentLabel')}</label>
-      <p class="document-storage-target">
-        <i data-lucide="${state.documentUploadBackend === 'webdav' ? 'cloud' : 'database'}" aria-hidden="true"></i>
-        <span>${t('documents.activeUploadTarget', {
-          target: state.documentUploadBackend === 'webdav'
-            ? t('documents.storageWebdav')
-            : t('documents.storageLocal'),
-        })}</span>
-      </p>
-      <label class="document-dropzone" id="modal-attachment-dropzone" for="modal-attachment">
-        <input class="sr-only" id="modal-attachment" type="file" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-        <span class="document-dropzone__icon">
-          <i data-lucide="file-up" aria-hidden="true"></i>
-        </span>
-        <span class="document-dropzone__title">${t('documents.dropzoneTitle')}</span>
-        <span class="document-dropzone__hint">${t('documents.dropzoneHint')}</span>
-        <span class="document-dropzone__file" id="modal-selected-attachment" ${isEdit && event.attachment_name ? '' : 'hidden'}>
-          ${isEdit && event.attachment_name ? esc(selectedAttachmentLabel(event.attachment_name)) : ''}
-        </span>
-      </label>
-      <div class="form-help">${t('calendar.attachmentHint')}</div>
-      <div class="event-attachment-preview" id="modal-attachment-preview" ${isEdit && hasAttachment(event) ? '' : 'hidden'}>
-        ${isEdit && hasAttachment(event) ? attachmentPreviewHtml(event) : ''}
-      </div>
-      <button class="btn btn--secondary" id="modal-remove-attachment" type="button"
-              ${isEdit && hasAttachment(event) ? '' : 'hidden'}>${t('calendar.attachmentRemove')}</button>
-    </div>
+    ${advancedSection(advancedFieldsHtml, { open: advancedFieldsOpen })}
 
     ${renderRRuleFields('event', isEdit ? event.recurrence_rule : null)}
 

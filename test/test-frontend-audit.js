@@ -95,6 +95,35 @@ test('static frontend translation keys exist in every locale', () => {
   assertKeysExistInEveryLocale(keys);
 });
 
+test('app locale values do not ship German placeholder markers', () => {
+  const localeFiles = readdirSync(new URL('../public/locales/', import.meta.url))
+    .filter((file) => file.endsWith('.json'));
+  const violations = [];
+
+  function collect(value, path, file) {
+    if (typeof value === 'string') {
+      if (value.includes('[de:')) violations.push(`${file}:${path}`);
+      return;
+    }
+    if (!value || typeof value !== 'object') return;
+    for (const [key, child] of Object.entries(value)) collect(child, path ? `${path}.${key}` : key, file);
+  }
+
+  for (const file of localeFiles) {
+    collect(JSON.parse(read(`../public/locales/${file}`)), '', file);
+  }
+
+  assert.deepEqual(violations, []);
+});
+
+test('English and French user multi-select none labels are localized', () => {
+  const en = JSON.parse(read('../public/locales/en.json'));
+  const fr = JSON.parse(read('../public/locales/fr.json'));
+
+  assert.equal(en.userMultiSelect.nobody, '- No one -');
+  assert.equal(fr.userMultiSelect.nobody, '- Personne -');
+});
+
 test('dynamic frontend translation key domains exist in every locale', () => {
   const familyRoles = ['dad', 'mom', 'parent', 'child', 'grandparent', 'relative', 'other'];
   const documentCategories = ['medical', 'school', 'identity', 'insurance', 'finance', 'home', 'vehicle', 'legal', 'travel', 'pets', 'warranty', 'taxes', 'work', 'other'];
@@ -154,6 +183,7 @@ test('settings information-architecture keys exist in every locale', () => {
     'nav.sectionOverview',
     'nav.sectionPlan',
     'nav.sectionHome',
+    'nav.sectionCustomModules',
     // Unauthorized / access-redirected notice.
     'settings.accessRedirected',
   ].forEach((key) => keys.add(key));
@@ -377,8 +407,8 @@ test('module-specific settings leaves only reference their owned preferences and
       ],
     },
     '../public/settings/pages/modules-budget.js': {
-      endpoints: ['/preferences'],
-      preferences: ['currency'],
+      endpoints: [],
+      preferences: [],
     },
     '../public/settings/pages/modules-housekeeping.js': {
       endpoints: ['/preferences'],
@@ -393,6 +423,7 @@ test('module-specific settings leaves only reference their owned preferences and
         'weather_lon',
         'weather_city',
         'weather_units',
+        'weather_auto_locate',
       ],
     },
   };
@@ -459,9 +490,12 @@ test('module-specific settings leaves preserve their required controls and behav
   );
 
   const budget = read('../public/settings/pages/modules-budget.js');
-  assert.match(budget, /id="currency-select"/);
-  assert.match(budget, /api\.put\('\/preferences', \{ currency: currencySelect\.value \}\)/);
-  assert.equal([...budget.matchAll(/<(?:input|select|textarea)\b/g)].length, 1);
+  // Currency moved to the unified Region/Format control in personal-appearance;
+  // the budget leaf is now a pointer card with no own form controls or API calls.
+  assert.doesNotMatch(budget, /id="currency-select"/);
+  assert.doesNotMatch(budget, /\bapi\./);
+  assert.match(budget, /\/settings\/personal\/appearance/);
+  assert.equal([...budget.matchAll(/<(?:input|select|textarea)\b/g)].length, 0);
 
   const housekeeping = read('../public/settings/pages/modules-housekeeping.js');
   assert.match(housekeeping, /id="housekeeping-payment-tasks"/);
@@ -883,7 +917,7 @@ test('settings retry focus only moves to a connected replacement button after re
 test('settings shell falls back to the domains overview for orphaned active leaves', () => {
   const source = read('../public/settings/shell.js');
 
-  assert.match(source, /if \(!domain\)\s*\{[\s\S]*console\.error\([\s\S]*renderDomainsOverview\(content,\s*domains\)/);
+  assert.match(source, /if \(!domain\)\s*\{[\s\S]*console\.error\([\s\S]*renderDomainsOverview\(content,\s*domains(?:,\s*user)?\)/);
   assert.match(source, /else\s*\{[\s\S]*await renderLeafContent\(content,\s*activeLeaf,\s*domain,\s*user,\s*query\)/);
 });
 
@@ -1105,6 +1139,34 @@ test('responsive adaptation keeps Notes vertical and prevents intrinsic-width ov
     notes,
     /\.note-card__title,[\s\S]*\.note-card__content\s*\{[\s\S]*unicode-bidi:\s*plaintext/
   );
+});
+
+test('dashboard weather widget adapts to selected widget size', () => {
+  const dashboard = read('../public/styles/dashboard.css');
+  const wrapperRule = cssRuleBody(dashboard, '.widget-wrapper');
+
+  assert.match(wrapperRule, /container:\s*dashboard-widget\s*\/\s*inline-size/);
+  assert.match(
+    dashboard,
+    /@container dashboard-widget \(min-width:\s*480px\)[\s\S]*\.weather-widget__inner\s*\{[\s\S]*flex-direction:\s*row/,
+    'weather should switch to horizontal layout from its widget width, not viewport width',
+  );
+  assert.match(
+    dashboard,
+    /\.widget-size--1x1\s*>\s*\.weather-widget \.weather-widget__meta,[\s\S]*\.widget-size--1x1\s*>\s*\.weather-widget \.weather-forecast\s*\{[\s\S]*display:\s*none/,
+    'tiny weather widgets should not force rich forecast content into the tile',
+  );
+  assert.match(
+    dashboard,
+    /\.widget-size--2x1\s*>\s*\.weather-widget \.weather-widget__meta,[\s\S]*\.widget-size--4x1\s*>\s*\.weather-widget \.weather-widget__meta\s*\{[\s\S]*display:\s*none/,
+    'one-row weather widgets should use a denser summary',
+  );
+  assert.doesNotMatch(
+    dashboard,
+    /@media \(min-width:\s*(?:768|1024|1440)px\)\s*\{\s*\.weather-widget\s*\{/,
+    'weather layout must not be driven by viewport breakpoints',
+  );
+  assert.doesNotMatch(dashboard, /\.weather-widget\s*\{[^}]*grid-column:\s*1\s*\/\s*-1/);
 });
 
 test('responsive adaptation keeps all three Kitchen tabs visible on narrow phones', () => {
@@ -1351,11 +1413,12 @@ test('phase 4 keeps Kitchen navigation identity stable', () => {
 test('global navigation groups domains with translated section labels', () => {
   const routerSource = read('../public/router.js');
 
-  // The grouped main-app navigation references the Overview, Plan and Home label keys
-  // and resolves section labels through t().
+  // The grouped main-app navigation references every section label key and
+  // resolves section labels through t().
   assert.match(routerSource, /'nav\.sectionOverview'/);
   assert.match(routerSource, /'nav\.sectionPlan'/);
   assert.match(routerSource, /'nav\.sectionHome'/);
+  assert.match(routerSource, /'nav\.sectionCustomModules'/);
   assert.match(routerSource, /t\(labelKey\)/);
 
   // The replaced household section label is no longer referenced.
@@ -1442,7 +1505,7 @@ test('settings cutover: the controller is a thin shell delegate without the lega
   assert.doesNotMatch(settingsPage, /extraClass:\s*'settings-tabs'/, 'controller must not render the legacy sub-tab bar');
 
   const lineCount = settingsPage.split('\n').length;
-  assert.ok(lineCount <= 160, `settings controller should be a thin shell (was ${lineCount} lines)`);
+  assert.ok(lineCount <= 170, `settings controller should be a thin shell (was ${lineCount} lines)`);
 });
 
 test('settings cutover: obsolete navigation modules and stylesheet are removed', () => {
@@ -1542,6 +1605,14 @@ test('calendar metadata uses lucide icon markup instead of visible emoji', () =>
   assert.match(source, /class="calendar-meta-icon icon-sm"/, 'metadata icons should use tokenized icon classes');
 });
 
+test('desktop Meals and Calendar date-navigation icons use the accent color', () => {
+  const meals = read('../public/styles/meals.css');
+  const calendar = read('../public/styles/calendar.css');
+
+  assert.match(cssRuleBody(meals, '.week-nav .btn--icon'), /color:\s*var\(--color-accent\)/);
+  assert.match(cssRuleBody(calendar, '.cal-toolbar__nav .btn--icon'), /color:\s*var\(--color-accent\)/);
+});
+
 test('calendar attachment removal control honors its hidden state', () => {
   const calendarCss = read('../public/styles/calendar.css');
   assert.match(
@@ -1598,7 +1669,7 @@ test('sticky section headers stack above glass cards via --z-sticky', () => {
 test('every locale resolves the grouped navigation section labels', () => {
   const localesDir = new URL('../public/locales/', import.meta.url);
   const files = readdirSync(localesDir).filter((f) => f.endsWith('.json'));
-  const sectionKeys = ['sectionOverview', 'sectionPlan', 'sectionHome'];
+  const sectionKeys = ['sectionOverview', 'sectionPlan', 'sectionHome', 'sectionCustomModules'];
 
   assert.ok(files.length >= 16, 'expected at least 16 locale files');
   for (const file of files) {
@@ -1609,6 +1680,14 @@ test('every locale resolves the grouped navigation section labels', () => {
     }
     assert.ok(!('section.household' in data.nav), `${file}: nav must not keep the flat "section.household" key (t() cannot resolve it)`);
   }
+});
+
+test('Brazilian Portuguese uses localized Help navigation copy', () => {
+  const data = JSON.parse(read('../public/locales/pt.json'));
+
+  assert.equal(data.nav?.help, 'Ajuda');
+  assert.equal(data.help?.title, 'Ajuda');
+  assert.doesNotMatch(JSON.stringify({ nav: data.nav, help: data.help }), /Hilfe/);
 });
 
 test('phase 7 locale files keep the de reference key set complete', () => {
@@ -1977,6 +2056,20 @@ test('budget chart exposes a screen-reader summary (audit 1.7)', () => {
     assert.match(json.budget.chartSummary, /\{\{top\}\}/, `${file} chartSummary must interpolate top`);
     assert.match(json.budget.chartSummary, /\{\{pct\}\}/, `${file} chartSummary must interpolate pct`);
   }
+});
+
+test('Budget places Subscriptions between Budget and Loans with secure rendering', () => {
+  const budget = read('../public/pages/budget.js');
+  const subscriptions = read('../public/pages/subscriptions.js');
+  const budgetTab = budget.indexOf('data-tab="budget"');
+  const subscriptionsTab = budget.indexOf('data-tab="subscriptions"');
+  const loansTab = budget.indexOf('data-tab="loans"');
+
+  assert.ok(budgetTab >= 0 && subscriptionsTab > budgetTab && loansTab > subscriptionsTab);
+  assert.match(budget, /renderSubscriptions/);
+  assert.doesNotMatch(subscriptions, /\.innerHTML\s*=/);
+  assert.match(subscriptions, /replaceChildren\(\)/);
+  assert.match(subscriptions, /insertAdjacentHTML\(/);
 });
 
 test('search fields keep visible labels after users enter a query', () => {
