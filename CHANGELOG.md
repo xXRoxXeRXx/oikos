@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.77.9] - 2026-06-28
+
+### Changed
+- **Dashboard → Heute essen:** Mahlzeiten-Widget wurde optisch an den Budgetübersicht-Widget-Stil angeglichen — 2×2-Karten-Grid mit Rahmen, abgerundeten Ecken, gedämpftem Hintergrund und farbakzentuiertem Hover-Effekt.
+
 ## [0.77.8] - 2026-06-28
 
 ### Changed
