@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Services publics",
         "subcatSubscriptionHealth": "Santé",
         "subcatSubscriptionEducation": "Éducation",
-        "subcatSubscriptionOther": "Autre"
+        "subcatSubscriptionOther": "Autre",
+        "reportsTab": "Statistiques",
+        "statsRangeWeek": "Semaine",
+        "statsRangeMonth": "Mois",
+        "statsRangeYear": "Année",
+        "statsIncome": "Revenus",
+        "statsExpenses": "Dépenses",
+        "statsBalance": "Solde",
+        "statsTrendTitle": "Évolution",
+        "statsCategoryTitle": "Par catégorie",
+        "statsDonutTitle": "Répartition des dépenses",
+        "statsExport": "Exporter CSV",
+        "statsEmptyTitle": "Aucune donnée sur la période",
+        "statsEmptyDescription": "Il n'y a pas encore d'entrées pour la période sélectionnée."
     },
     "settings": {
         "title": "Paramètres",

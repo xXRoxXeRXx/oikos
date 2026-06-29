@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Utenze",
         "subcatSubscriptionHealth": "Salute",
         "subcatSubscriptionEducation": "Istruzione",
-        "subcatSubscriptionOther": "Altro"
+        "subcatSubscriptionOther": "Altro",
+        "reportsTab": "Statistiche",
+        "statsRangeWeek": "Settimana",
+        "statsRangeMonth": "Mese",
+        "statsRangeYear": "Anno",
+        "statsIncome": "Entrate",
+        "statsExpenses": "Uscite",
+        "statsBalance": "Saldo",
+        "statsTrendTitle": "Andamento",
+        "statsCategoryTitle": "Per categoria",
+        "statsDonutTitle": "Quote spese",
+        "statsExport": "Esporta CSV",
+        "statsEmptyTitle": "Nessun dato nel periodo",
+        "statsEmptyDescription": "Non ci sono ancora voci per il periodo selezionato."
     },
     "settings": {
         "title": "Impostazioni",

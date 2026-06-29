@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Allmännyttiga tjänster",
         "subcatSubscriptionHealth": "Hälsa",
         "subcatSubscriptionEducation": "Utbildning",
-        "subcatSubscriptionOther": "Övrigt"
+        "subcatSubscriptionOther": "Övrigt",
+        "reportsTab": "Statistik",
+        "statsRangeWeek": "Vecka",
+        "statsRangeMonth": "Månad",
+        "statsRangeYear": "År",
+        "statsIncome": "Inkomster",
+        "statsExpenses": "Utgifter",
+        "statsBalance": "Saldo",
+        "statsTrendTitle": "Trend",
+        "statsCategoryTitle": "Per kategori",
+        "statsDonutTitle": "Utgiftsandelar",
+        "statsExport": "Exportera CSV",
+        "statsEmptyTitle": "Ingen data i perioden",
+        "statsEmptyDescription": "Det finns inga poster för den valda perioden ännu."
     },
     "settings": {
         "title": "Inställningar",

@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Temel hizmetler",
         "subcatSubscriptionHealth": "Sağlık",
         "subcatSubscriptionEducation": "Eğitim",
-        "subcatSubscriptionOther": "Diğer"
+        "subcatSubscriptionOther": "Diğer",
+        "reportsTab": "İstatistikler",
+        "statsRangeWeek": "Hafta",
+        "statsRangeMonth": "Ay",
+        "statsRangeYear": "Yıl",
+        "statsIncome": "Gelirler",
+        "statsExpenses": "Giderler",
+        "statsBalance": "Bakiye",
+        "statsTrendTitle": "Eğilim",
+        "statsCategoryTitle": "Kategoriye göre",
+        "statsDonutTitle": "Gider payları",
+        "statsExport": "CSV dışa aktar",
+        "statsEmptyTitle": "Dönemde veri yok",
+        "statsEmptyDescription": "Seçilen dönem için henüz kayıt bulunmuyor."
     },
     "settings": {
         "title": "Ayarlar",

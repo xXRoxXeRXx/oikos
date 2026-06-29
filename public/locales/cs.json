@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Služby",
         "subcatSubscriptionHealth": "Zdraví",
         "subcatSubscriptionEducation": "Vzdělávání",
-        "subcatSubscriptionOther": "Ostatní"
+        "subcatSubscriptionOther": "Ostatní",
+        "reportsTab": "Statistiky",
+        "statsRangeWeek": "Týden",
+        "statsRangeMonth": "Měsíc",
+        "statsRangeYear": "Rok",
+        "statsIncome": "Příjmy",
+        "statsExpenses": "Výdaje",
+        "statsBalance": "Zůstatek",
+        "statsTrendTitle": "Vývoj",
+        "statsCategoryTitle": "Podle kategorie",
+        "statsDonutTitle": "Podíly výdajů",
+        "statsExport": "Exportovat CSV",
+        "statsEmptyTitle": "Žádná data v období",
+        "statsEmptyDescription": "Pro vybrané období zatím nejsou žádné záznamy."
     },
     "settings": {
         "title": "Nastavení",

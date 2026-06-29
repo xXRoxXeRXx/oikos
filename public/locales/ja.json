@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "公共料金",
         "subcatSubscriptionHealth": "健康",
         "subcatSubscriptionEducation": "教育",
-        "subcatSubscriptionOther": "その他"
+        "subcatSubscriptionOther": "その他",
+        "reportsTab": "統計",
+        "statsRangeWeek": "週",
+        "statsRangeMonth": "月",
+        "statsRangeYear": "年",
+        "statsIncome": "収入",
+        "statsExpenses": "支出",
+        "statsBalance": "残高",
+        "statsTrendTitle": "推移",
+        "statsCategoryTitle": "カテゴリ別",
+        "statsDonutTitle": "支出の内訳",
+        "statsExport": "CSVエクスポート",
+        "statsEmptyTitle": "期間にデータがありません",
+        "statsEmptyDescription": "選択した期間にはまだ記録がありません。"
     },
     "settings": {
         "title": "設定",

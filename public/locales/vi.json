@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Tiện ích",
         "subcatSubscriptionHealth": "Sức khỏe",
         "subcatSubscriptionEducation": "Giáo dục",
-        "subcatSubscriptionOther": "Khác"
+        "subcatSubscriptionOther": "Khác",
+        "reportsTab": "Thống kê",
+        "statsRangeWeek": "Tuần",
+        "statsRangeMonth": "Tháng",
+        "statsRangeYear": "Năm",
+        "statsIncome": "Thu nhập",
+        "statsExpenses": "Chi tiêu",
+        "statsBalance": "Số dư",
+        "statsTrendTitle": "Xu hướng",
+        "statsCategoryTitle": "Theo danh mục",
+        "statsDonutTitle": "Tỷ lệ chi tiêu",
+        "statsExport": "Xuất CSV",
+        "statsEmptyTitle": "Không có dữ liệu trong kỳ",
+        "statsEmptyDescription": "Chưa có mục nào cho kỳ đã chọn."
     },
     "settings": {
         "title": "Cài đặt",

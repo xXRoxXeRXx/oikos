@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Nutsvoorzieningen",
         "subcatSubscriptionHealth": "Gezondheid",
         "subcatSubscriptionEducation": "Onderwijs",
-        "subcatSubscriptionOther": "Overig"
+        "subcatSubscriptionOther": "Overig",
+        "reportsTab": "Statistieken",
+        "statsRangeWeek": "Week",
+        "statsRangeMonth": "Maand",
+        "statsRangeYear": "Jaar",
+        "statsIncome": "Inkomsten",
+        "statsExpenses": "Uitgaven",
+        "statsBalance": "Saldo",
+        "statsTrendTitle": "Verloop",
+        "statsCategoryTitle": "Per categorie",
+        "statsDonutTitle": "Uitgavenaandelen",
+        "statsExport": "CSV exporteren",
+        "statsEmptyTitle": "Geen gegevens in periode",
+        "statsEmptyDescription": "Er zijn nog geen vermeldingen voor de geselecteerde periode."
     },
     "settings": {
         "title": "Instellingen",

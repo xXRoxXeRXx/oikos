@@ -832,7 +832,20 @@
         "subcatSubscriptionUtilities": "Media i usługi",
         "subcatSubscriptionHealth": "Zdrowie",
         "subcatSubscriptionEducation": "Edukacja",
-        "subcatSubscriptionOther": "Inne"
+        "subcatSubscriptionOther": "Inne",
+        "reportsTab": "Statystyki",
+        "statsRangeWeek": "Tydzień",
+        "statsRangeMonth": "Miesiąc",
+        "statsRangeYear": "Rok",
+        "statsIncome": "Przychody",
+        "statsExpenses": "Wydatki",
+        "statsBalance": "Saldo",
+        "statsTrendTitle": "Trend",
+        "statsCategoryTitle": "Według kategorii",
+        "statsDonutTitle": "Udziały wydatków",
+        "statsExport": "Eksportuj CSV",
+        "statsEmptyTitle": "Brak danych w okresie",
+        "statsEmptyDescription": "Brak wpisów dla wybranego okresu."
     },
     "settings": {
         "title": "Ustawienia",

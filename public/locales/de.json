@@ -832,7 +832,20 @@
         "subcatSubscriptionUtilities": "Versorgungsdienste",
         "subcatSubscriptionHealth": "Gesundheit",
         "subcatSubscriptionEducation": "Bildung",
-        "subcatSubscriptionOther": "Sonstiges"
+        "subcatSubscriptionOther": "Sonstiges",
+        "reportsTab": "Statistik",
+        "statsRangeWeek": "Woche",
+        "statsRangeMonth": "Monat",
+        "statsRangeYear": "Jahr",
+        "statsIncome": "Einnahmen",
+        "statsExpenses": "Ausgaben",
+        "statsBalance": "Saldo",
+        "statsTrendTitle": "Verlauf",
+        "statsCategoryTitle": "Nach Kategorie",
+        "statsDonutTitle": "Ausgaben-Anteile",
+        "statsExport": "CSV exportieren",
+        "statsEmptyTitle": "Keine Daten im Zeitraum",
+        "statsEmptyDescription": "Für den gewählten Zeitraum gibt es noch keine Einträge."
     },
     "settings": {
         "title": "Einstellungen",

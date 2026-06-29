@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Utilities",
         "subcatSubscriptionHealth": "Health",
         "subcatSubscriptionEducation": "Education",
-        "subcatSubscriptionOther": "Other"
+        "subcatSubscriptionOther": "Other",
+        "reportsTab": "Statistics",
+        "statsRangeWeek": "Week",
+        "statsRangeMonth": "Month",
+        "statsRangeYear": "Year",
+        "statsIncome": "Income",
+        "statsExpenses": "Expenses",
+        "statsBalance": "Balance",
+        "statsTrendTitle": "Trend",
+        "statsCategoryTitle": "By category",
+        "statsDonutTitle": "Expense shares",
+        "statsExport": "Export CSV",
+        "statsEmptyTitle": "No data in range",
+        "statsEmptyDescription": "There are no entries for the selected period yet."
     },
     "settings": {
         "title": "Settings",

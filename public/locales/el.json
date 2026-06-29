@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Υπηρεσίες κοινής ωφέλειας",
         "subcatSubscriptionHealth": "Υγεία",
         "subcatSubscriptionEducation": "Εκπαίδευση",
-        "subcatSubscriptionOther": "Άλλα"
+        "subcatSubscriptionOther": "Άλλα",
+        "reportsTab": "Στατιστικά",
+        "statsRangeWeek": "Εβδομάδα",
+        "statsRangeMonth": "Μήνας",
+        "statsRangeYear": "Έτος",
+        "statsIncome": "Έσοδα",
+        "statsExpenses": "Έξοδα",
+        "statsBalance": "Υπόλοιπο",
+        "statsTrendTitle": "Τάση",
+        "statsCategoryTitle": "Ανά κατηγορία",
+        "statsDonutTitle": "Μερίδια εξόδων",
+        "statsExport": "Εξαγωγή CSV",
+        "statsEmptyTitle": "Δεν υπάρχουν δεδομένα στην περίοδο",
+        "statsEmptyDescription": "Δεν υπάρχουν ακόμη εγγραφές για την επιλεγμένη περίοδο."
     },
     "settings": {
         "title": "Ρυθμίσεις",

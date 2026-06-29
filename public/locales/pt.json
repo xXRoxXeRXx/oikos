@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Serviços essenciais",
         "subcatSubscriptionHealth": "Saúde",
         "subcatSubscriptionEducation": "Educação",
-        "subcatSubscriptionOther": "Outros"
+        "subcatSubscriptionOther": "Outros",
+        "reportsTab": "Estatísticas",
+        "statsRangeWeek": "Semana",
+        "statsRangeMonth": "Mês",
+        "statsRangeYear": "Ano",
+        "statsIncome": "Receitas",
+        "statsExpenses": "Despesas",
+        "statsBalance": "Saldo",
+        "statsTrendTitle": "Evolução",
+        "statsCategoryTitle": "Por categoria",
+        "statsDonutTitle": "Distribuição de despesas",
+        "statsExport": "Exportar CSV",
+        "statsEmptyTitle": "Sem dados no período",
+        "statsEmptyDescription": "Ainda não há entradas para o período selecionado."
     },
     "settings": {
         "title": "Configurações",

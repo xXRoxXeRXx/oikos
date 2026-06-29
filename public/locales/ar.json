@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "المرافق",
         "subcatSubscriptionHealth": "الصحة",
         "subcatSubscriptionEducation": "التعليم",
-        "subcatSubscriptionOther": "أخرى"
+        "subcatSubscriptionOther": "أخرى",
+        "reportsTab": "إحصائيات",
+        "statsRangeWeek": "أسبوع",
+        "statsRangeMonth": "شهر",
+        "statsRangeYear": "سنة",
+        "statsIncome": "الإيرادات",
+        "statsExpenses": "المصروفات",
+        "statsBalance": "الرصيد",
+        "statsTrendTitle": "الاتجاه",
+        "statsCategoryTitle": "حسب الفئة",
+        "statsDonutTitle": "توزيع المصروفات",
+        "statsExport": "تصدير CSV",
+        "statsEmptyTitle": "لا بيانات في الفترة",
+        "statsEmptyDescription": "لا توجد إدخالات للفترة المحددة حتى الآن."
     },
     "settings": {
         "title": "الإعدادات",

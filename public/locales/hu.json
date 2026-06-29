@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Közművek",
         "subcatSubscriptionHealth": "Egészség",
         "subcatSubscriptionEducation": "Oktatás",
-        "subcatSubscriptionOther": "Egyéb"
+        "subcatSubscriptionOther": "Egyéb",
+        "reportsTab": "Statisztika",
+        "statsRangeWeek": "Hét",
+        "statsRangeMonth": "Hónap",
+        "statsRangeYear": "Év",
+        "statsIncome": "Bevételek",
+        "statsExpenses": "Kiadások",
+        "statsBalance": "Egyenleg",
+        "statsTrendTitle": "Tendencia",
+        "statsCategoryTitle": "Kategória szerint",
+        "statsDonutTitle": "Kiadások megoszlása",
+        "statsExport": "CSV exportálása",
+        "statsEmptyTitle": "Nincs adat az időszakban",
+        "statsEmptyDescription": "A kiválasztott időszakhoz még nincsenek bejegyzések."
     },
     "settings": {
         "title": "Beállítások",

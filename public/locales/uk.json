@@ -826,7 +826,20 @@
         "subcatSubscriptionUtilities": "Комунальні послуги",
         "subcatSubscriptionHealth": "Здоров’я",
         "subcatSubscriptionEducation": "Освіта",
-        "subcatSubscriptionOther": "Інше"
+        "subcatSubscriptionOther": "Інше",
+        "reportsTab": "Статистика",
+        "statsRangeWeek": "Тиждень",
+        "statsRangeMonth": "Місяць",
+        "statsRangeYear": "Рік",
+        "statsIncome": "Доходи",
+        "statsExpenses": "Витрати",
+        "statsBalance": "Баланс",
+        "statsTrendTitle": "Динаміка",
+        "statsCategoryTitle": "За категоріями",
+        "statsDonutTitle": "Частки витрат",
+        "statsExport": "Експорт CSV",
+        "statsEmptyTitle": "Немає даних за період",
+        "statsEmptyDescription": "За вибраний період записів ще немає."
     },
     "settings": {
         "title": "Налаштування",
